@@ -1,30 +1,25 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type React from "react";
+import type { Metadata } from "next";
+import "../../../packages/ui/src/styles/globals.css";
+import { Toaster } from "../../../packages/ui/src/components/toaster";
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
-
-const fontSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+export const metadata: Metadata = {
+  title: "AI Care Work Portfolio",
+  description: "AI Care Work Portfolio",
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
-      >
-        <Providers>{children}</Providers>
+    <html lang="ja">
+      <body>
+        {children}
+        <Toaster />
       </body>
     </html>
-  )
+  );
 }
