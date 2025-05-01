@@ -1,9 +1,15 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Progress } from "@workspace/ui/components/progress"
+import Link from "next/link";
+import { Button } from "@workspace/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import { Progress } from "@workspace/ui/components/progress";
 import {
   BarChart2,
   Brain,
@@ -16,7 +22,7 @@ import {
   Settings,
   Share2,
   Users2,
-} from "lucide-react"
+} from "lucide-react";
 
 export default function Dashboard() {
   return (
@@ -87,13 +93,23 @@ export default function Dashboard() {
           {/* トップヘッダー */}
           <header className="bg-white border-b border-gray-200 py-4 px-6">
             <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold text-gray-900">ダッシュボード</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                ダッシュボード
+              </h1>
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex items-center gap-2"
+                >
                   <Share2 size={16} />
                   ポートフォリオを共有
                 </Button>
-                <Button size="sm" className="bg-rose-600 hover:bg-rose-700 flex items-center gap-2" asChild>
+                <Button
+                  size="sm"
+                  className="bg-rose-600 hover:bg-rose-700 flex items-center gap-2"
+                  asChild
+                >
                   <Link href="/activity-log">
                     <Plus size={16} />
                     活動を記録
@@ -114,7 +130,9 @@ export default function Dashboard() {
                       <MessageSquare className="text-rose-600" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg mb-1">今日のこと、話しませんか？</h3>
+                      <h3 className="font-semibold text-lg mb-1">
+                        今日のこと、話しませんか？
+                      </h3>
                       <p className="text-gray-600 mb-4">
                         AIとの自然な会話を通じて、あなたのケア活動を振り返りましょう。
                       </p>
@@ -133,7 +151,9 @@ export default function Dashboard() {
                       <Calendar className="text-blue-600" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg mb-1">カレンダーからケア活動を発見</h3>
+                      <h3 className="font-semibold text-lg mb-1">
+                        カレンダーからケア活動を発見
+                      </h3>
                       <p className="text-gray-600 mb-4">
                         Googleカレンダーと連携して、予定からケア活動を自動的に抽出します。
                       </p>
@@ -180,13 +200,17 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <Progress value={84} className="h-2 mb-1" />
-                  <p className="text-xs text-gray-500">100%に達するには詳細を追加してください</p>
+                  <p className="text-xs text-gray-500">
+                    100%に達するには詳細を追加してください
+                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>ポートフォリオダウンロード数</CardDescription>
+                  <CardDescription>
+                    ポートフォリオダウンロード数
+                  </CardDescription>
                   <CardTitle className="text-2xl">37</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -205,7 +229,9 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center">
                     <div>
                       <CardTitle>スキル分析</CardTitle>
-                      <CardDescription>AIがケア活動から特定した職業スキル</CardDescription>
+                      <CardDescription>
+                        AIがケア活動から特定した職業スキル
+                      </CardDescription>
                     </div>
                     <Button variant="outline" size="sm">
                       すべてのスキルを表示
@@ -225,9 +251,14 @@ export default function Dashboard() {
                         <span className="font-bold">85%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-rose-600 h-2.5 rounded-full" style={{ width: "85%" }}></div>
+                        <div
+                          className="bg-rose-600 h-2.5 rounded-full"
+                          style={{ width: "85%" }}
+                        ></div>
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">複数の責任を同時に管理した47の活動に基づく</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        複数の責任を同時に管理した47の活動に基づく
+                      </p>
                     </div>
 
                     <div>
@@ -241,7 +272,10 @@ export default function Dashboard() {
                         <span className="font-bold">78%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: "78%" }}></div>
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
+                          style={{ width: "78%" }}
+                        ></div>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
                         迅速な判断を要する予期せぬ状況に関わる23の活動に基づく
@@ -252,14 +286,22 @@ export default function Dashboard() {
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
                           <div className="bg-green-100 p-1.5 rounded-full">
-                            <MessageSquare className="text-green-600" size={16} />
+                            <MessageSquare
+                              className="text-green-600"
+                              size={16}
+                            />
                           </div>
-                          <h3 className="font-medium">コミュニケーションスキル</h3>
+                          <h3 className="font-medium">
+                            コミュニケーションスキル
+                          </h3>
                         </div>
                         <span className="font-bold">92%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-green-600 h-2.5 rounded-full" style={{ width: "92%" }}></div>
+                        <div
+                          className="bg-green-600 h-2.5 rounded-full"
+                          style={{ width: "92%" }}
+                        ></div>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
                         様々な相手との明確なコミュニケーションを必要とする56の活動に基づく
@@ -277,7 +319,10 @@ export default function Dashboard() {
                         <span className="font-bold">81%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: "81%" }}></div>
+                        <div
+                          className="bg-purple-600 h-2.5 rounded-full"
+                          style={{ width: "81%" }}
+                        ></div>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
                         複雑なスケジュールとリソース管理を含む38の活動に基づく
@@ -305,13 +350,15 @@ export default function Dashboard() {
                     {[
                       {
                         date: "今日, 9:30",
-                        activity: "仕事の会議の準備をしながら子供たちの朝の準備",
+                        activity:
+                          "仕事の会議の準備をしながら子供たちの朝の準備",
                         skills: ["マルチタスク", "時間管理"],
                         duration: "1時間15分",
                       },
                       {
                         date: "昨日, 16:15",
-                        activity: "高齢の親の医療予約のスケジュール調整を手伝う",
+                        activity:
+                          "高齢の親の医療予約のスケジュール調整を手伝う",
                         skills: ["コミュニケーション", "問題解決"],
                         duration: "45分",
                       },
@@ -328,14 +375,20 @@ export default function Dashboard() {
                         duration: "1時間",
                       },
                     ].map((item, index) => (
-                      <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <div
+                        key={index}
+                        className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                      >
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="text-sm text-gray-500">{item.date}</p>
                             <p className="font-medium mt-1">{item.activity}</p>
                             <div className="flex flex-wrap gap-1 mt-2">
                               {item.skills.map((skill, idx) => (
-                                <span key={idx} className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">
+                                <span
+                                  key={idx}
+                                  className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full"
+                                >
                                   {skill}
                                 </span>
                               ))}
@@ -356,7 +409,9 @@ export default function Dashboard() {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>職業スキルへの変換</CardTitle>
-                <CardDescription>ケア活動が職場スキルにどのように変換されるか</CardDescription>
+                <CardDescription>
+                  ケア活動が職場スキルにどのように変換されるか
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -365,7 +420,9 @@ export default function Dashboard() {
                       <div className="bg-rose-100 p-2 rounded-full">
                         <BarChart2 className="text-rose-600" size={20} />
                       </div>
-                      <h3 className="font-semibold">マルチタスク → プロジェクト管理</h3>
+                      <h3 className="font-semibold">
+                        マルチタスク → プロジェクト管理
+                      </h3>
                     </div>
                     <p className="text-sm text-gray-600">
                       複数のケア責任を同時に管理する能力は、職業環境でのプロジェクト管理スキルに直接変換されます。
@@ -401,7 +458,9 @@ export default function Dashboard() {
                       <div className="bg-green-100 p-2 rounded-full">
                         <MessageSquare className="text-green-600" size={20} />
                       </div>
-                      <h3 className="font-semibold">ケアのコミュニケーション → 顧客関係</h3>
+                      <h3 className="font-semibold">
+                        ケアのコミュニケーション → 顧客関係
+                      </h3>
                     </div>
                     <p className="text-sm text-gray-600">
                       様々な年齢の家族と効果的にコミュニケーションする能力は、優れた顧客・関係者とのコミュニケーションに変換されます。
@@ -420,5 +479,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
