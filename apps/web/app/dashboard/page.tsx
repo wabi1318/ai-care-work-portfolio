@@ -13,81 +13,19 @@ import { Progress } from "@workspace/ui/components/progress";
 import {
   BarChart2,
   Brain,
-  Calendar,
   Clock,
-  Download,
-  FileText,
   MessageSquare,
   Plus,
-  Settings,
   Share2,
-  Users2,
 } from "lucide-react";
+import Sidebar from "../../components/Sidebar";
 
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
         {/* サイドバー */}
-        <div className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="bg-rose-600 text-white p-1.5 rounded-md">
-                <Users2 size={18} />
-              </div>
-              <h1 className="font-bold text-gray-900">ケアポートフォリオ</h1>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-rose-50 text-rose-700"
-            >
-              <BarChart2 size={18} />
-              ダッシュボード
-            </Link>
-            <Link
-              href="/activities"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Calendar size={18} />
-              活動記録
-            </Link>
-            <Link
-              href="/portfolio"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <FileText size={18} />
-              ポートフォリオ
-            </Link>
-            <Link
-              href="/ai-analysis"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Brain size={18} />
-              AI分析
-            </Link>
-            <Link
-              href="/settings"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Settings size={18} />
-              設定
-            </Link>
-          </nav>
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                <span className="text-xs font-medium">佐</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium">佐藤 花子</p>
-                <p className="text-xs text-gray-500">親 & 介護者</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        <Sidebar />
         {/* メインコンテンツ */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* トップヘッダー */}
@@ -118,110 +56,8 @@ export default function Dashboard() {
               </div>
             </div>
           </header>
-
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
-            {/* 新機能のカード */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <Card className="bg-gradient-to-br from-rose-50 to-white border-rose-100">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-rose-100 p-3 rounded-full">
-                      <MessageSquare className="text-rose-600" size={24} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">
-                        今日のこと、話しませんか？
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        AIとの自然な会話を通じて、あなたのケア活動を振り返りましょう。
-                      </p>
-                      <Button asChild className="bg-rose-600 hover:bg-rose-700">
-                        <Link href="/ai-chat">AIと話す</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <Calendar className="text-blue-600" size={24} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">
-                        カレンダーからケア活動を発見
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        Googleカレンダーと連携して、予定からケア活動を自動的に抽出します。
-                      </p>
-                      <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                        <Link href="/calendar/settings">カレンダーと連携</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>総ケア時間</CardDescription>
-                  <CardTitle className="text-2xl">1,248</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-green-600">先月比 +12%</p>
-                    <Clock size={16} className="text-gray-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>特定されたスキル</CardDescription>
-                  <CardTitle className="text-2xl">24</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-green-600">今月5つの新スキル</p>
-                    <Brain size={16} className="text-gray-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>ポートフォリオ強度</CardDescription>
-                  <CardTitle className="text-2xl">84%</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Progress value={84} className="h-2 mb-1" />
-                  <p className="text-xs text-gray-500">
-                    100%に達するには詳細を追加してください
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>
-                    ポートフォリオダウンロード数
-                  </CardDescription>
-                  <CardTitle className="text-2xl">37</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-green-600">先週比 +8</p>
-                    <Download size={16} className="text-gray-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* スキル分析 */}
               <Card className="lg:col-span-2">

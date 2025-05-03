@@ -1,119 +1,36 @@
-import Link from "next/link"
-import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent } from "@workspace/ui/components/card"
-import { Input } from "@workspace/ui/components/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
+import { Button } from "@workspace/ui/components/button";
+import { Card, CardContent } from "@workspace/ui/components/card";
+import { Input } from "@workspace/ui/components/input";
 import {
-  BarChart2,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
+import {
   Brain,
-  Calendar,
   Clock,
-  FileText,
   Filter,
-  Plus,
   Search,
-  Settings,
-  Users2,
   MessageSquare,
   Edit,
   CalendarIcon,
-} from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu"
+} from "lucide-react";
+
+import Sidebar from "@/components/Sidebar";
+import TopHeader from "@/components/TopHeader";
 
 export default function Activities() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
         {/* サイドバー */}
-        <div className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="bg-rose-600 text-white p-1.5 rounded-md">
-                <Users2 size={18} />
-              </div>
-              <h1 className="font-bold text-gray-900">ケアポートフォリオ</h1>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <BarChart2 size={18} />
-              ダッシュボード
-            </Link>
-            <Link
-              href="/activities"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-rose-50 text-rose-700"
-            >
-              <Calendar size={18} />
-              活動記録
-            </Link>
-            <Link
-              href="/portfolio"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <FileText size={18} />
-              ポートフォリオ
-            </Link>
-            <Link
-              href="/settings"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Settings size={18} />
-              設定
-            </Link>
-          </nav>
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                <span className="text-xs font-medium">佐</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium">佐藤 花子</p>
-                <p className="text-xs text-gray-500">親 & 介護者</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Sidebar />
 
         {/* メインコンテンツ */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* トップヘッダー */}
-          <header className="bg-white border-b border-gray-200 py-4 px-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold text-gray-900">ケア活動</h1>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" className="bg-rose-600 hover:bg-rose-700 flex items-center gap-2">
-                    <Plus size={16} />
-                    新しい活動を記録
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/activity-log" className="flex items-center gap-2 cursor-pointer">
-                      <Edit size={16} />
-                      手動で記録
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/ai-chat" className="flex items-center gap-2 cursor-pointer">
-                      <MessageSquare size={16} />
-                      AIと会話して記録
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/calendar/insights" className="flex items-center gap-2 cursor-pointer">
-                      <CalendarIcon size={16} />
-                      カレンダーから抽出
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
-
+          <TopHeader />
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
             <div className="mb-6">
@@ -129,7 +46,11 @@ export default function Activities() {
                   <div className="flex gap-2">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input type="search" placeholder="活動を検索..." className="pl-8 h-9 w-[200px] sm:w-[300px]" />
+                      <Input
+                        type="search"
+                        placeholder="活動を検索..."
+                        className="pl-8 h-9 w-[200px] sm:w-[300px]"
+                      />
                     </div>
                     <Button variant="outline" size="sm" className="h-9">
                       <Filter className="h-4 w-4 mr-2" />
@@ -143,7 +64,8 @@ export default function Activities() {
                     {[
                       {
                         date: "今日, 9:30",
-                        activity: "仕事の会議の準備をしながら子供たちの朝の準備",
+                        activity:
+                          "仕事の会議の準備をしながら子供たちの朝の準備",
                         category: "育児",
                         skills: ["マルチタスク", "時間管理"],
                         duration: "1時間15分",
@@ -151,7 +73,8 @@ export default function Activities() {
                       },
                       {
                         date: "昨日, 16:15",
-                        activity: "高齢の親の医療予約のスケジュール調整を手伝う",
+                        activity:
+                          "高齢の親の医療予約のスケジュール調整を手伝う",
                         category: "高齢者ケア",
                         skills: ["コミュニケーション", "問題解決", "忍耐力"],
                         duration: "45分",
@@ -199,7 +122,8 @@ export default function Activities() {
                       },
                       {
                         date: "5月8日, 7:00",
-                        activity: "子供たちの監督をしながら一週間分の食事を準備",
+                        activity:
+                          "子供たちの監督をしながら一週間分の食事を準備",
                         category: "家事",
                         skills: ["マルチタスク", "計画力", "時間管理"],
                         duration: "3時間",
@@ -214,9 +138,13 @@ export default function Activities() {
                                 <span className="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full">
                                   {item.category}
                                 </span>
-                                <span className="text-sm text-gray-500">{item.date}</span>
+                                <span className="text-sm text-gray-500">
+                                  {item.date}
+                                </span>
                               </div>
-                              <p className="font-medium mb-2">{item.activity}</p>
+                              <p className="font-medium mb-2">
+                                {item.activity}
+                              </p>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {item.skills.map((skill, idx) => (
                                   <span
@@ -275,7 +203,9 @@ export default function Activities() {
 
                 {/* 他のタブコンテンツは同様だがフィルタリングされる */}
                 <TabsContent value="childcare" className="mt-0">
-                  <div className="space-y-4">{/* フィルタリングされた育児活動 */}</div>
+                  <div className="space-y-4">
+                    {/* フィルタリングされた育児活動 */}
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -283,5 +213,5 @@ export default function Activities() {
         </div>
       </div>
     </div>
-  )
+  );
 }
