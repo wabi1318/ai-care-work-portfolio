@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -30,6 +31,7 @@ export default function ActivityForm({
   apiEndpoint,
   onSuccess,
 }: ActivityFormProps) {
+  const router = useRouter();
   const { toast } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +61,17 @@ export default function ActivityForm({
   // フォーム送信処理
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // 必須フィールドの検証
+    if (!formData.problem || !formData.solution || !formData.result) {
+      toast({
+        title: "入力エラー",
+        description: "発生した課題、解決策、成果や家族の反応は必須項目です",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -79,14 +92,15 @@ export default function ActivityForm({
       const result = await response.json();
 
       toast({
-        title: "活動を記録しました",
+        title: "活動を分析しました",
         description: `${result.analysis.skills.length}つのスキルが特定されました`,
       });
 
-      // 成功時にコールバックを実行
-      if (onSuccess) {
-        onSuccess();
-      }
+      // 分析結果をローカルストレージに保存
+      localStorage.setItem("activityAnalysisResult", JSON.stringify(result));
+
+      // 分析結果ページに遷移
+      router.push("/activity-analysis");
     } catch (error) {
       console.error("活動登録エラー:", error);
       toast({
@@ -152,26 +166,28 @@ export default function ActivityForm({
 
           {/* 課題 */}
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="problem">発生した課題（任意）</Label>
+            <Label htmlFor="problem">発生した課題</Label>
             <Textarea
               id="problem"
               name="problem"
               placeholder="例：朝起きられず準備が遅れた"
               value={formData.problem}
               onChange={handleChange}
+              required
               className="min-h-[80px]"
             />
           </div>
 
           {/* 解決策 */}
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="solution">解決策（任意）</Label>
+            <Label htmlFor="solution">解決策</Label>
             <Textarea
               id="solution"
               name="solution"
               placeholder="例：前日に服や持ち物を準備しておいた"
               value={formData.solution}
               onChange={handleChange}
+              required
               className="min-h-[80px]"
             />
           </div>
@@ -198,13 +214,14 @@ export default function ActivityForm({
 
           {/* 結果 */}
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="result">成果や家族の反応（任意）</Label>
+            <Label htmlFor="result">成果や家族の反応</Label>
             <Textarea
               id="result"
               name="result"
               placeholder="例：時間通り送り届けることができた"
               value={formData.result}
               onChange={handleChange}
+              required
               className="min-h-[80px]"
             />
           </div>

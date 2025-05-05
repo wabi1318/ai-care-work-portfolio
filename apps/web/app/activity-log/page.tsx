@@ -37,6 +37,7 @@ export default function ActivityLog() {
           <h1 className="text-2xl font-bold mb-6">ケア活動を記録</h1>
 
           {/* ActivityFormコンポーネントを使用し、apiEndpointとonSuccessを渡す */}
+          {/* 分析結果表示モーダルはActivityForm内部で処理 */}
           <ActivityForm
             apiEndpoint="/api/activities"
             onSuccess={handleSuccess}

@@ -22,6 +22,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // 追加の必須フィールドの検証
+    if (!problem || !solution || !result) {
+      return NextResponse.json(
+        {
+          error:
+            "必須フィールド（発生した課題・解決策・成果や家族の反応）が不足しています",
+        },
+        { status: 400 }
+      );
+    }
+
     // システムメッセージとユーザーメッセージの構築
     const systemMessage = `あなたは、家庭内のケア活動を職務経歴書向けに翻訳する支援者です。
 ユーザーの活動記録から、どのようなスキルが表れていたかを読み取り、以下のような形で出力してください。
@@ -34,14 +45,14 @@ export async function POST(req: Request) {
 日付: ${date}
 活動内容: ${activity_content}
 所要時間: ${duration}分
-課題: ${problem || "特になし"}
-解決策: ${solution || "特になし"}
+課題: ${problem}
+解決策: ${solution}
 感情: ${emotion || "特になし"}
-成果: ${result || "特になし"}
+成果: ${result}
 ---
 
 出力フォーマット:
-1. 発揮されたスキルリスト（最大5件）
+1. 発揮されたスキルリスト（最大3件）
     - スキル名
     - 発揮傾向（例：強く見られる／よく見られる／少し見られる）
     - 活動との関連性の高さ（高い／中程度／低い）
