@@ -19,6 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
+import TopHeader from "@/components/TopHeader";
 
 export default function Dashboard() {
   return (
@@ -29,33 +30,7 @@ export default function Dashboard() {
         {/* メインコンテンツ */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* トップヘッダー */}
-          <header className="bg-white border-b border-gray-200 py-4 px-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                ダッシュボード
-              </h1>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex items-center gap-2"
-                >
-                  <Share2 size={16} />
-                  ポートフォリオを共有
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-rose-600 hover:bg-rose-700 flex items-center gap-2"
-                  asChild
-                >
-                  <Link href="/activity-log">
-                    <Plus size={16} />
-                    活動を記録
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </header>
+          <TopHeader />
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
