@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -22,8 +21,15 @@ import {
 import { Loader2 } from "lucide-react";
 import { useToast } from "@workspace/ui/hooks/use-toast";
 
-export default function ActivityForm() {
-  const router = useRouter();
+interface ActivityFormProps {
+  apiEndpoint: string;
+  onSuccess?: () => void;
+}
+
+export default function ActivityForm({
+  apiEndpoint,
+  onSuccess,
+}: ActivityFormProps) {
   const { toast } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,12 +38,15 @@ export default function ActivityForm() {
     activity_content: "",
     duration: 60,
     problem: "",
+    solution: "",
     emotion: "",
     result: "",
   });
 
   // フォーム入力の処理
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -53,19 +62,8 @@ export default function ActivityForm() {
     setIsSubmitting(true);
 
     try {
-      // 必須フィールドのバリデーション
-      if (!formData.activity_content || formData.activity_content.length < 10) {
-        toast({
-          title: "入力エラー",
-          description: "活動内容は10文字以上入力してください",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       // APIリクエスト
-      const response = await fetch("/api/activitie", {
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,8 +83,10 @@ export default function ActivityForm() {
         description: `${result.analysis.skills.length}つのスキルが特定されました`,
       });
 
-      // 保存成功後、活動一覧ページに遷移
-      router.push("/activities");
+      // 成功時にコールバックを実行
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("活動登録エラー:", error);
       toast({
@@ -134,9 +134,6 @@ export default function ActivityForm() {
               required
               className="min-h-[100px]"
             />
-            <p className="text-xs text-gray-500">
-              具体的な活動内容を10文字以上で入力してください。
-            </p>
           </div>
 
           {/* 所要時間 */}
@@ -161,6 +158,19 @@ export default function ActivityForm() {
               name="problem"
               placeholder="例：朝起きられず準備が遅れた"
               value={formData.problem}
+              onChange={handleChange}
+              className="min-h-[80px]"
+            />
+          </div>
+
+          {/* 解決策 */}
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="solution">解決策（任意）</Label>
+            <Textarea
+              id="solution"
+              name="solution"
+              placeholder="例：前日に服や持ち物を準備しておいた"
+              value={formData.solution}
               onChange={handleChange}
               className="min-h-[80px]"
             />
