@@ -1,4 +1,67 @@
 import { NextResponse } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+// Supabase接続用のクライアント作成
+async function createClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }[]
+        ) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Server Componentからの呼び出し時のエラーを無視
+          }
+        },
+      },
+    }
+  );
+}
+
+// Supabase接続テスト用のエンドポイント
+export async function GET() {
+  try {
+    const supabase = await createClient();
+
+    // user テーブルをクエリしてみる
+    const { data, error } = await supabase.from("users").select();
+
+    console.log(data, error);
+    if (error) {
+      throw new Error(`Supabase接続エラー: ${error.message}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Supabase接続テスト成功",
+      data,
+    });
+  } catch (error: unknown) {
+    console.error("Supabase接続テストエラー:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "不明なエラー";
+    return NextResponse.json(
+      { error: "Supabase接続テストに失敗しました", details: errorMessage },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: Request) {
   try {
