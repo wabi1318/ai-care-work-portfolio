@@ -1,11 +1,24 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { Env } from "./db/client";
+import { usersRoutes } from "./routes/getUsers";
 
-const databaseUrl = process.env.DATABASE_URL;
+const app = new Hono<{ Bindings: Env }>()
+  .use(
+    "/*",
+    cors({
+      origin: (origin, c) => {
+        return c.env.APP_FRONTEND_URL || "http://localhost:3000";
+      },
+      allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
+      maxAge: 864_000,
+      credentials: true,
+    })
+  )
+  // APIルート登録
+  .route("/api/", usersRoutes);
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL環境変数が設定されていません。");
-}
-
-const client = postgres(databaseUrl, { prepare: false });
-export const db = drizzle({ client });
+export default app;
+export type AppType = typeof app;

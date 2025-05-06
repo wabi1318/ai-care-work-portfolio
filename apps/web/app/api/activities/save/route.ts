@@ -1,12 +1,27 @@
 import { NextResponse } from "next/server";
-import { db } from "@workspace/api";
-import { users } from "@workspace/api/drizzle/schema";
 
-// Drizzle接続テスト用のエンドポイント
 export async function GET() {
   try {
-    // Drizzle ORMを使ってusersテーブルをクエリ
-    const usersData = await db.select().from(users);
+    // APIエンドポイントからユーザーデータを取得
+    const apiUrl = process.env.API_URL || "http://localhost:8787";
+    const apiEndpoint = "/api/users";
+    const fullUrl = `${apiUrl}${apiEndpoint}`;
+
+    console.log("API呼び出しURL:", fullUrl);
+
+    const response = await fetch(fullUrl);
+
+    if (!response.ok) {
+      throw new Error(`API response error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error("APIからのレスポンスが成功ではありません");
+    }
+
+    const usersData = data.data;
 
     // データが取得できたか確認
     console.log("取得したユーザーデータ:", usersData);
@@ -17,15 +32,15 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      message: "Drizzle ORM接続テスト成功",
+      message: "ユーザーデータ取得成功",
       data: usersData,
     });
   } catch (error: unknown) {
-    console.error("データベース接続テストエラー:", error);
+    console.error("ユーザーデータ取得エラー:", error);
     const errorMessage =
       error instanceof Error ? error.message : "不明なエラー";
     return NextResponse.json(
-      { error: "データベース接続テストに失敗しました", details: errorMessage },
+      { error: "ユーザーデータの取得に失敗しました", details: errorMessage },
       { status: 500 }
     );
   }
