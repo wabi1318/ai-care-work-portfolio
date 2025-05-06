@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     // APIエンドポイントからユーザーデータを取得
-    const apiUrl = process.env.API_URL || "http://localhost:8787";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
     const apiEndpoint = "/api/users";
     const fullUrl = `${apiUrl}${apiEndpoint}`;
 
