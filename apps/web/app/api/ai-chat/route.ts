@@ -1,13 +1,16 @@
-import { NextResponse } from "next/server"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { NextResponse } from "next/server";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json()
+    const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: "メッセージが提供されていません" }, { status: 400 })
+      return NextResponse.json(
+        { error: "メッセージが提供されていません" },
+        { status: 400 }
+      );
     }
 
     // システムプロンプトを作成
@@ -39,10 +42,10 @@ export async function POST(req: Request) {
 \`\`\`
 
 JSONは必ず上記の形式で返してください。ユーザーの会話から十分な情報が得られない場合は、careActivitiesは空の配列を返してください。
-`
+`;
 
     // ユーザーの最新メッセージを取得
-    const userMessage = messages[messages.length - 1].content
+    const userMessage = messages[messages.length - 1].content;
 
     // OpenAI APIを使用して応答を生成
     const { text: resultText } = await generateText({
@@ -50,31 +53,42 @@ JSONは必ず上記の形式で返してください。ユーザーの会話か�
       system: systemPrompt,
       prompt: userMessage,
       temperature: 0.7,
-    })
+    });
 
     // 応答からJSONを抽出
-    let message = resultText
-    let careActivities = []
+    let message = resultText;
+    let careActivities = [];
 
-    const jsonMatch = resultText.match(/```json\n([\s\S]*?)\n```/)
+    const jsonMatch = resultText.match(/```json\n([\s\S]*?)\n```/);
     if (jsonMatch && jsonMatch[1]) {
       try {
-        const jsonData = JSON.parse(jsonMatch[1])
-        careActivities = jsonData.careActivities || []
+        const jsonData = JSON.parse(jsonMatch[1]);
+        careActivities = jsonData.careActivities || [];
 
         // JSONを除いたメッセージ部分を抽出
-        message = resultText.replace(/```json\n[\s\S]*?\n```/, "").trim()
+        message = resultText.replace(/```json\n[\s\S]*?\n```/, "").trim();
       } catch (error) {
-        console.error("JSON解析エラー:", error)
+        console.error("JSON解析エラー:", error);
       }
     }
 
     return NextResponse.json({
       message,
       careActivities,
-    })
-  } catch (error) {
-    console.error("チャットエラー:", error)
-    return NextResponse.json({ error: "チャット処理に失敗しました", details: error.message }, { status: 500 })
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: "チャット処理に失敗しました", details: error.message },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      {
+        error: "チャット処理に失敗しました",
+        details: "不明なエラーが発生しました",
+      },
+      { status: 500 }
+    );
   }
 }
