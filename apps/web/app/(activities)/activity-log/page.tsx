@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import ActivityForm from "../components/ActivityForm";
-import TopHeader from "../components/TopHeader";
+import ActivityForm from "@/app/components/ActivityForm";
+import TopHeader from "@/components/TopHeader";
 
 export default function ActivityLog() {
   const router = useRouter();

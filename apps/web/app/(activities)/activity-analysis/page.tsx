@@ -13,11 +13,12 @@ import {
 } from "@workspace/ui/components/card";
 import { Label } from "@workspace/ui/components/label";
 import { Badge } from "@workspace/ui/components/badge";
-import TopHeader from "../components/TopHeader";
+import TopHeader from "@/components/TopHeader";
 import SkillAnalysisResult, {
   SkillAnalysis,
   ResumeExample,
-} from "../components/SkillAnalysisResult";
+} from "@/app/components/SkillAnalysisResult";
+
 import { useToast } from "@workspace/ui/hooks/use-toast";
 
 export default function ActivityAnalysis() {
