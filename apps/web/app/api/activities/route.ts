@@ -34,8 +34,47 @@ export async function POST(req: Request) {
     }
 
     // システムメッセージとユーザーメッセージの構築
-    const systemMessage = `あなたは、家庭内のケア活動を職務経歴書向けに翻訳する支援者です。
-ユーザーの活動記録から、どのようなスキルが表れていたかを読み取り、以下のような形で出力してください。
+    const systemMessage = `あなたはケア活動からスキルを抽出する支援者です。
+以下のスキル定義を参照し、ユーザーの活動記録から適切なスキルを最大5件抽出してください。
+
+各スキルには次の情報を含めて出力してください：
+- スキル名
+- 発揮傾向（強く見られる／よく見られる／少し見られる）
+- 関連性の高さ（高い／中程度／低い）
+- なぜそのスキルが活動と関連していると判断できるか
+
+【スキル定義】:
+[
+  {
+    "name": "マルチタスク管理能力",
+    "definition": "複数の作業を同時に進行し、適切に切り替えて遂行する能力"
+  },
+  {
+    "name": "問題解決・危機対応力",
+    "definition": "課題を発見し、冷静に対応策を立案・実行する能力"
+  },
+  {
+    "name": "コミュニケーション能力",
+    "definition": "相手の話を理解し、自分の考えを明確に伝える能力"
+  },
+  {
+    "name": "忍耐力・感情マネジメント",
+    "definition": "困難な状況下でも冷静さと前向きさを保つ能力"
+  },
+  {
+    "name": "計画力・時間管理能力",
+    "definition": "目標達成に向けて計画を立て、優先順位を整理して遂行する能力"
+  },
+  {
+    "name": "共感・傾聴力",
+    "definition": "相手の立場や感情に寄り添い、丁寧に話を聞く能力"
+  },
+  {
+    "name": "サポート力",
+    "definition": "他者の立場に立ち、必要に応じて支援・補助を行う能力"
+  }
+]
+
 評価や点数付けはせず、活動の文脈の中にどのようなスキルが見られるか、どの程度関連性があるかを示してください。`;
 
     const userMessage = `以下は家庭内ケア活動の記録です。
@@ -72,13 +111,14 @@ export async function POST(req: Request) {
   ],
   "resume_summary": [
     "履歴書向け文例1",
-    "履歴書向け文例2"
+    "履歴書向け文例2",
+    "履歴書向け文例3"
   ]
 }`;
 
     // OpenAI APIリクエスト
     const { text: resultText } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: openai("gpt-4o"),
       system: systemMessage,
       prompt: userMessage,
       temperature: 0.3,
@@ -86,7 +126,19 @@ export async function POST(req: Request) {
 
     // 結果のパース
     try {
-      const result = JSON.parse(resultText);
+      // LLMからの応答に ```json ``` が含まれている場合があるため、削除する
+      let cleanedResultText = resultText;
+      if (cleanedResultText.startsWith("```json\n")) {
+        cleanedResultText = cleanedResultText.substring(7);
+      }
+      if (cleanedResultText.endsWith("\n```")) {
+        cleanedResultText = cleanedResultText.substring(
+          0,
+          cleanedResultText.length - 4
+        );
+      }
+
+      const result = JSON.parse(cleanedResultText);
 
       return NextResponse.json({
         success: true,
@@ -140,19 +192,19 @@ export async function GET(req: Request) {
           result: "時間通り送り届けた",
           skills: [
             {
-              name: "時間管理",
+              name: "計画力・時間管理能力",
               tendency: "強く見られる",
               relevance: "高い",
               reason: "朝の遅れに対応しつつ、予定通り送迎を完了している",
             },
             {
-              name: "先見性と準備力",
+              name: "問題解決・危機対応力",
               tendency: "よく見られる",
               relevance: "高い",
               reason: "前日に準備をしておくことで時間のリスクに対処している",
             },
             {
-              name: "感情制御",
+              name: "忍耐力・感情マネジメント",
               tendency: "よく見られる",
               relevance: "中程度",
               reason: "焦った状況でも冷静に対応したと記述がある",
@@ -161,6 +213,7 @@ export async function GET(req: Request) {
           resume_summary: [
             "時間変更に柔軟に対応し、家庭内のスケジュール調整を的確に実行",
             "先を見越した準備と問題解決能力で効率的なタスク管理を実現",
+            "突発的な事態にも冷静に対処し、安定したケアを提供した",
           ],
         },
       ],
