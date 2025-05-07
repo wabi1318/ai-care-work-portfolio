@@ -88,11 +88,6 @@ export async function POST(req: Request) {
     try {
       const result = JSON.parse(resultText);
 
-      // TODO: ここでデータベース保存処理を追加
-      // Supabaseなどのクライアントを使用して保存
-      console.log(result);
-
-      // 保存完了後、結果を返す
       return NextResponse.json({
         success: true,
         activity: {
