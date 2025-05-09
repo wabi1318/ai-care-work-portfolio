@@ -93,7 +93,6 @@ export default function ActivityForm({
 
       toast({
         title: "活動を分析しました",
-        description: `${result.analysis.skills.length}つのスキルが特定されました`,
       });
 
       // 分析結果をローカルストレージに保存

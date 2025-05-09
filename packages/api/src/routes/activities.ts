@@ -9,6 +9,32 @@ import {
 import { eq } from "drizzle-orm";
 
 export const activitiesRoutes = new Hono<{ Bindings: Env }>()
+  // スキル一覧取得
+  .get("/skills", async (c) => {
+    try {
+      const db = getDbClient(c);
+      const allSkills = await db.select().from(skills);
+      console.log(allSkills);
+
+      return c.json({
+        success: true,
+        data: allSkills,
+      });
+    } catch (error: unknown) {
+      console.error("スキル取得エラー:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "不明なエラー";
+
+      return c.json(
+        {
+          success: false,
+          error: "スキルの取得に失敗しました",
+          details: errorMessage,
+        },
+        500
+      );
+    }
+  })
   // 活動一覧取得
   .get("/activities", async (c) => {
     const db = getDbClient(c);
@@ -76,13 +102,32 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
           .from(skills)
           .where(eq(skills.name, skillData.name));
 
-        // スキルが存在しない場合は新規作成
-        if (!existingSkill) {
+        // スキルが存在する場合はカウントを+1更新
+        if (existingSkill) {
+          const currentCount = existingSkill.count
+            ? Number(existingSkill.count)
+            : 0;
+          const newCount = currentCount + 1;
+
+          await db
+            .update(skills)
+            .set({ count: newCount })
+            .where(eq(skills.id, existingSkill.id))
+            .returning();
+
+          // 更新後のスキル情報を取得
+          [existingSkill] = await db
+            .select()
+            .from(skills)
+            .where(eq(skills.id, existingSkill.id));
+        } else {
+          // スキルが存在しない場合は新規作成（countを1で初期化）
           [existingSkill] = await db
             .insert(skills)
             .values({
               name: skillData.name,
               category: "自動検出", // デフォルトカテゴリ
+              count: 1, // 初回利用で1を設定
             })
             .returning();
         }

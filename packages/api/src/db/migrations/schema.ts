@@ -69,4 +69,6 @@ export const skills = pgTable("skills", {
 	name: text(),
 	category: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	count: bigint({ mode: "number" }),
 });
