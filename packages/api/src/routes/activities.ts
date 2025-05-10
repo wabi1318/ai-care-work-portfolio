@@ -109,6 +109,10 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
             : 0;
           const newCount = currentCount + 1;
 
+          console.log(
+            `スキル「${skillData.name}」のカウントを更新: ${currentCount} → ${newCount}`
+          );
+
           await db
             .update(skills)
             .set({ count: newCount })
@@ -120,6 +124,8 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
             .select()
             .from(skills)
             .where(eq(skills.id, existingSkill.id));
+
+          console.log(`更新後のスキル情報:`, existingSkill);
         } else {
           // スキルが存在しない場合は新規作成（countを1で初期化）
           [existingSkill] = await db
