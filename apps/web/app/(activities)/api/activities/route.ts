@@ -9,6 +9,7 @@ interface Skill {
   definition: string;
   category?: string;
   count?: number;
+  description?: string;
 }
 
 // スキル定義の配列
@@ -143,7 +144,8 @@ JSON形式で以下の情報を返してください。
     {
       "name": "スキル名", // 提案スキル名も含む
       "relevance": "関連性の高さ", // 高い／中程度
-      "reason": "補足説明" // なぜそのスキルが表れていると判断できるか、簡潔に
+      "reason": "補足説明", // なぜそのスキルが表れていると判断できるか、簡潔に
+      "description": "スキルの詳細説明" // スキルの定義と、実務や職場でどのように活かせるかの説明を含める
     }
     // 最大3件のスキルを含める
   ],
@@ -156,6 +158,9 @@ JSON形式で以下の情報を返してください。
 
     const userMessage = `以下は家庭内ケア活動の記録です。
 この記録をもとに、システムメッセージで定義された形式に従ってスキル抽出と職務経歴書向け文例の生成を行ってください。
+スキルの説明（description）は「スキルの定義＋そのスキルが職場でどのように活かせるか」の形式で、50字程度で記述してください。
+
+例：「サポート力」の場合 → 「他者の立場に立ち、必要に応じて支援・補助を行う能力。チームや他者の業務を補助しながら全体を支えるような協働の場面で役立ちます。」
 
 ---
 日付: ${date}
@@ -180,6 +185,7 @@ JSON形式で以下の情報を返してください。
     // 結果のパース
     try {
       const result = JSON.parse(resultText);
+      console.log("result", result);
 
       // 各スキルに発揮傾向を追加
       if (result.skills && Array.isArray(result.skills)) {
@@ -200,6 +206,8 @@ JSON形式で以下の情報を返してください。
           return {
             ...skill,
             tendency,
+            // DBに登録済みのスキルの場合は既存の説明を使用
+            description: dbSkill?.description || skill.description,
           };
         });
       }

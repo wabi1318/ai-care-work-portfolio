@@ -330,7 +330,7 @@ export default async function Portfolio() {
                   </div>
 
                   {/* ビジネス転換マッピングセクション */}
-                  <div className="mb-8">
+                  {/* <div className="mb-8">
                     <h4 className="text-lg font-semibold mb-3">
                       ケアスキルをビジネススキルに変換
                     </h4>
@@ -366,7 +366,7 @@ export default async function Portfolio() {
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* フッターセクション */}
                   <div>

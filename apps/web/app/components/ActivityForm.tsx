@@ -43,6 +43,7 @@ export default function ActivityForm({
     solution: "",
     emotion: "",
     result: "",
+    description: "",
   });
 
   // フォーム入力の処理

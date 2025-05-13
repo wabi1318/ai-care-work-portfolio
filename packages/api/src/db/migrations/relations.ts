@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, careActivities, activitySkills, skills } from "./schema";
+import { users, careActivities, activitySkills, skills, bizEquivalents } from "./schema";
 
 export const careActivitiesRelations = relations(careActivities, ({one, many}) => ({
 	user: one(users, {
@@ -26,4 +26,12 @@ export const activitySkillsRelations = relations(activitySkills, ({one}) => ({
 
 export const skillsRelations = relations(skills, ({many}) => ({
 	activitySkills: many(activitySkills),
+	bizEquivalents: many(bizEquivalents),
+}));
+
+export const bizEquivalentsRelations = relations(bizEquivalents, ({one}) => ({
+	skill: one(skills, {
+		fields: [bizEquivalents.skillId],
+		references: [skills.id]
+	}),
 }));

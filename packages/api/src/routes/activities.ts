@@ -134,6 +134,7 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
               name: skillData.name,
               category: "自動検出", // デフォルトカテゴリ
               count: 1, // 初回利用で1を設定
+              description: skillData.description || null, // 説明文を保存
             })
             .returning();
         }
