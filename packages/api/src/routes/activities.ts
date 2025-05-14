@@ -1,11 +1,11 @@
 import { Hono } from "hono";
-import { Env } from "../db/client.js";
-import { getDbClient } from "../helpers/dbClient.js";
+import { Env } from "../db/client";
+import { getDbClient } from "../helpers/dbClient";
 import {
   careActivities,
   activitySkills,
   skills,
-} from "../db/migrations/schema.js";
+} from "../db/migrations/schema";
 import { eq } from "drizzle-orm";
 
 export const activitiesRoutes = new Hono<{ Bindings: Env }>()

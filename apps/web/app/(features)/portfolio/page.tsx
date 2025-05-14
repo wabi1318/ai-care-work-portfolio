@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -21,152 +23,219 @@ import {
   Award,
   Briefcase,
   FileText,
+  Loader2,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import TopHeader from "@/components/TopHeader";
+import { useEffect, useState } from "react";
 
-// この関数はサーバーアクションとして実装する予定（APIからデータを取得）
-async function getPortfolioData() {
-  // APIからデータを取得する代わりに、仮のデータを返す
-  // 実際の実装では、Drizzle等を使用してDBから取得
-  return {
-    user: {
-      name: "佐藤 花子",
-      email: "hanako.sato@example.com",
-    },
-    summary: {
-      totalActivities: 142,
-      totalHours: 1200,
-      topSkills: [
-        "マルチタスク能力",
-        "コミュニケーションスキル",
-        "問題解決能力",
-      ],
-    },
-    coreSkills: [
-      {
-        id: 1,
-        name: "マルチタスク能力",
-        score: 85,
-        tendency: "強く見られる",
-        description:
-          "品質と細部への注意を維持しながら、複数の同時責任を一貫して管理。専門的な環境でのプロジェクト管理スキルに相当します。",
-        icon: "BarChart2",
-        color: "rose",
-      },
-      {
-        id: 2,
-        name: "問題解決 & 危機管理",
-        score: 78,
-        tendency: "よく見られる",
-        description:
-          "状況を迅速に分析し、プレッシャーの下で効果的な解決策を実施する強い能力。予期せぬケア状況の処理を通じて実証されています。",
-        icon: "Brain",
-        color: "blue",
-      },
-      {
-        id: 3,
-        name: "コミュニケーションスキル",
-        score: 92,
-        tendency: "強く見られる",
-        description:
-          "様々な相手やストレスの多い状況で効果的にコミュニケーションする優れた能力。顧客や関係者とのコミュニケーションに直接転用できます。",
-        icon: "MessageSquare",
-        color: "green",
-      },
-      {
-        id: 4,
-        name: "時間管理 & 計画力",
-        score: 81,
-        tendency: "よく見られる",
-        description:
-          "複雑なスケジュールと物流を調整する能力が証明された優れた組織力。プロジェクト計画とリソース配分に適用可能です。",
-        icon: "Clock",
-        color: "purple",
-      },
-    ],
-    experiences: [
-      {
-        id: 1,
-        title: "危機管理",
-        summary:
-          "家庭の緊急事態を成功裏に管理し、迅速な思考と機転を実証。例：家族の日常を維持し、混乱を最小限に抑えながら緊急の配管修理を調整。",
-        color: "rose",
-        starStatement:
-          "台所の水漏れが発生した際、修理業者の手配と家族の食事の準備を同時に行う必要がありました。即座に優先順位を決め、修理業者への明確な状況説明と家族への代替食事プランを実行。結果として、混乱を最小限に抑えながら効率的に問題を解決できました。この経験から得た危機対応能力は、職場でのプロジェクト中の予期せぬ問題への対応に活かせます。",
-        skillName: "危機管理",
-      },
-      {
-        id: 2,
-        title: "対立解決",
-        summary:
-          "定期的に対人関係の対立を調停し、すべての当事者のニーズに対応するバランスの取れた解決策を見出しました。職場での意見の相違に適用可能な効果的なエスカレーション防止技術を開発。",
-        color: "blue",
-        starStatement:
-          "兄弟間の資源（おもちゃ、親の時間）をめぐる頻繁な対立に対処するため、公平なルールシステムを構築し実装しました。各人の感情と視点を認識しながら、双方が納得できる解決策を見出すプロセスを設計。この結果、対立頻度が70%減少し、より協力的な家庭環境を実現しました。この調停スキルはチーム内の意見の相違や利害衝突の解決に応用できます。",
-        skillName: "対立解決",
-      },
-      {
-        id: 3,
-        title: "医療調整",
-        summary:
-          "複雑な医療予約を調整し、薬のスケジュールを正確に管理。複雑なシステムをナビゲートし、詳細な記録を維持する能力を実証。",
-        color: "green",
-        starStatement:
-          "高齢の親族のために複数の専門医との予約、投薬スケジュール、健康記録の管理システムを構築しました。医療情報を整理し、医師と効果的にコミュニケーションを取ることで、治療計画の一貫性を確保。結果として、薬の相互作用リスクを回避し、健康状態の改善に寄与しました。この経験で培った記録管理と情報整理能力は、プロジェクト管理や情報システム構築に転用できます。",
-        skillName: "情報管理",
-      },
-      {
-        id: 4,
-        title: "マルチタスク管理",
-        summary:
-          "家事、育児、介護など複数の責任を同時に管理しながら、すべてのタスクの品質を確保。",
-        color: "purple",
-        starStatement:
-          "育児と在宅勤務を同時に管理する中で、子どもの安全を確保しながら会議に参加し、期限のあるタスクを完了させました。この経験から得たプライオリティ設定能力は、複数のプロジェクトを同時に管理する場面で活かせます。",
-        skillName: "マルチタスク能力",
-      },
-      {
-        id: 5,
-        title: "専門的コミュニケーション",
-        summary:
-          "医療や教育などの専門家と効果的にコミュニケーションを取り、複雑な情報を理解し伝える能力。",
-        color: "amber",
-        starStatement:
-          "高齢の親族のために医療関係者と明確にコミュニケーションを取り、複雑な医療情報を理解しやすい形に翻訳することで、最適な治療決定をサポートしました。この経験はチーム間の情報伝達や顧客対応で役立ちます。",
-        skillName: "コミュニケーションスキル",
-      },
-    ],
-    bizEquivalents: [
-      {
-        careSkill: "危機管理",
-        bizEquivalent: "リスクマネジメント",
-      },
-      {
-        careSkill: "対立解決",
-        bizEquivalent: "交渉・調停能力",
-      },
-      {
-        careSkill: "情報管理",
-        bizEquivalent: "情報システム管理",
-      },
-      {
-        careSkill: "マルチタスク能力",
-        bizEquivalent: "プロジェクト管理",
-      },
-      {
-        careSkill: "コミュニケーションスキル",
-        bizEquivalent: "クライアント/チームコミュニケーション",
-      },
-    ],
+// データ型の定義
+type PortfolioData = {
+  user: {
+    name: string;
+    email: string;
   };
-}
+  summary: {
+    totalActivities: number;
+    totalHours: number;
+    topSkills: string[];
+  };
+  coreSkills: Array<{
+    id: number;
+    name: string;
+    tendency: string;
+    description: string;
+    icon: string;
+    color: string;
+  }>;
+  experiences: Array<{
+    id: number;
+    title: string;
+    summary: string;
+    color: string;
+    starStatement: string;
+    skillName: string;
+  }>;
+  bizEquivalents?: Array<{
+    careSkill: string;
+    bizEquivalent: string;
+  }>;
+};
 
-export default async function Portfolio() {
-  // サーバーコンポーネントでデータを取得
-  const portfolioData = await getPortfolioData();
-  const { user, summary, coreSkills, experiences, bizEquivalents } =
-    portfolioData;
+// デフォルトデータ
+const defaultData: PortfolioData = {
+  user: {
+    name: "佐藤 花子",
+    email: "hanako.sato@example.com",
+  },
+  summary: {
+    totalActivities: 0,
+    totalHours: 0,
+    topSkills: ["読み込み中..."],
+  },
+  coreSkills: [
+    {
+      id: 1,
+      name: "マルチタスク能力",
+      tendency: "強く見られる",
+      description:
+        "品質と細部への注意を維持しながら、複数の同時責任を一貫して管理。専門的な環境でのプロジェクト管理スキルに相当します。",
+      icon: "BarChart2",
+      color: "rose",
+    },
+    {
+      id: 2,
+      name: "問題解決 & 危機管理",
+      tendency: "よく見られる",
+      description:
+        "状況を迅速に分析し、プレッシャーの下で効果的な解決策を実施する強い能力。予期せぬケア状況の処理を通じて実証されています。",
+      icon: "Brain",
+      color: "blue",
+    },
+    {
+      id: 3,
+      name: "コミュニケーションスキル",
+      tendency: "強く見られる",
+      description:
+        "様々な相手やストレスの多い状況で効果的にコミュニケーションする優れた能力。顧客や関係者とのコミュニケーションに直接転用できます。",
+      icon: "MessageSquare",
+      color: "green",
+    },
+    {
+      id: 4,
+      name: "時間管理 & 計画力",
+      tendency: "よく見られる",
+      description:
+        "複雑なスケジュールと物流を調整する能力が証明された優れた組織力。プロジェクト計画とリソース配分に適用可能です。",
+      icon: "Clock",
+      color: "purple",
+    },
+  ],
+  experiences: [
+    {
+      id: 1,
+      title: "危機管理",
+      summary:
+        "家庭の緊急事態を成功裏に管理し、迅速な思考と機転を実証。例：家族の日常を維持し、混乱を最小限に抑えながら緊急の配管修理を調整。",
+      color: "rose",
+      starStatement:
+        "台所の水漏れが発生した際、修理業者の手配と家族の食事の準備を同時に行う必要がありました。即座に優先順位を決め、修理業者への明確な状況説明と家族への代替食事プランを実行。結果として、混乱を最小限に抑えながら効率的に問題を解決できました。この経験から得た危機対応能力は、職場でのプロジェクト中の予期せぬ問題への対応に活かせます。",
+      skillName: "危機管理",
+    },
+    {
+      id: 2,
+      title: "対立解決",
+      summary:
+        "定期的に対人関係の対立を調停し、すべての当事者のニーズに対応するバランスの取れた解決策を見出しました。職場での意見の相違に適用可能な効果的なエスカレーション防止技術を開発。",
+      color: "blue",
+      starStatement:
+        "兄弟間の資源（おもちゃ、親の時間）をめぐる頻繁な対立に対処するため、公平なルールシステムを構築し実装しました。各人の感情と視点を認識しながら、双方が納得できる解決策を見出すプロセスを設計。この結果、対立頻度が70%減少し、より協力的な家庭環境を実現しました。この調停スキルはチーム内の意見の相違や利害衝突の解決に応用できます。",
+      skillName: "対立解決",
+    },
+    {
+      id: 3,
+      title: "医療調整",
+      summary:
+        "複雑な医療予約を調整し、薬のスケジュールを正確に管理。複雑なシステムをナビゲートし、詳細な記録を維持する能力を実証。",
+      color: "green",
+      starStatement:
+        "高齢の親族のために複数の専門医との予約、投薬スケジュール、健康記録の管理システムを構築しました。医療情報を整理し、医師と効果的にコミュニケーションを取ることで、治療計画の一貫性を確保。結果として、薬の相互作用リスクを回避し、健康状態の改善に寄与しました。この経験で培った記録管理と情報整理能力は、プロジェクト管理や情報システム構築に転用できます。",
+      skillName: "情報管理",
+    },
+    {
+      id: 4,
+      title: "マルチタスク管理",
+      summary:
+        "家事、育児、介護など複数の責任を同時に管理しながら、すべてのタスクの品質を確保。",
+      color: "purple",
+      starStatement:
+        "育児と在宅勤務を同時に管理する中で、子どもの安全を確保しながら会議に参加し、期限のあるタスクを完了させました。この経験から得たプライオリティ設定能力は、複数のプロジェクトを同時に管理する場面で活かせます。",
+      skillName: "マルチタスク能力",
+    },
+    {
+      id: 5,
+      title: "専門的コミュニケーション",
+      summary:
+        "医療や教育などの専門家と効果的にコミュニケーションを取り、複雑な情報を理解し伝える能力。",
+      color: "amber",
+      starStatement:
+        "高齢の親族のために医療関係者と明確にコミュニケーションを取り、複雑な医療情報を理解しやすい形に翻訳することで、最適な治療決定をサポートしました。この経験はチーム間の情報伝達や顧客対応で役立ちます。",
+      skillName: "コミュニケーションスキル",
+    },
+  ],
+  bizEquivalents: [
+    {
+      careSkill: "危機管理",
+      bizEquivalent: "リスクマネジメント",
+    },
+    {
+      careSkill: "対立解決",
+      bizEquivalent: "交渉・調停能力",
+    },
+    {
+      careSkill: "情報管理",
+      bizEquivalent: "情報システム管理",
+    },
+    {
+      careSkill: "マルチタスク能力",
+      bizEquivalent: "プロジェクト管理",
+    },
+    {
+      careSkill: "コミュニケーションスキル",
+      bizEquivalent: "クライアント/チームコミュニケーション",
+    },
+  ],
+};
+
+export default function Portfolio() {
+  const [portfolioData, setPortfolioData] =
+    useState<PortfolioData>(defaultData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // APIからデータを取得する関数
+  const fetchPortfolioData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/portfolio`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`API response error: ${response.status}`);
+      }
+
+      const apiData = await response.json();
+
+      // APIデータとデフォルトデータをマージ
+      setPortfolioData({
+        ...defaultData,
+        summary: {
+          totalActivities: apiData.summary?.totalActivities || 0,
+          totalHours: apiData.summary?.totalHours || 0,
+          topSkills: apiData.topSkills?.map(
+            (skill: { skillName: string }) => skill.skillName
+          ) || ["データなし"],
+        },
+      });
+
+      setError(null);
+    } catch (error) {
+      console.error("Failed to fetch portfolio data:", error);
+      setError(
+        error instanceof Error ? error.message : "不明なエラーが発生しました"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // コンポーネントマウント時に一度だけデータを取得
+  useEffect(() => {
+    fetchPortfolioData();
+  }, []); // 空の依存配列で一度だけ実行
+
+  const { user, summary, coreSkills, experiences } = portfolioData;
 
   // アイコンマッピング
   const iconMap = {
@@ -176,6 +245,31 @@ export default async function Portfolio() {
     Clock: Clock,
     Award: Award,
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto" />
+          <p className="mt-4 text-gray-600">
+            ポートフォリオデータを読み込み中...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <div className="text-red-500 text-xl mb-4">エラーが発生しました</div>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <Button onClick={fetchPortfolioData}>再試行</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -375,11 +469,12 @@ export default async function Portfolio() {
                     </h4>
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <p className="text-sm text-gray-700 mb-3">
-                        このポートフォリオは、記録されたケア活動のAI分析を使用して作成され、それらを専門的な職場コンピテンシーに変換しています。表示されているスキルと指標は、ケア活動を通じて開発された実際の能力を表しています。
+                        このポートフォリオは、日常のケア活動から抽出したビジネススキルを可視化したものです。家事や育児、介護などの経験を通じて培われた実践的能力を、企業環境で活かせる具体的なスキルとして整理しています。
                       </p>
                       <p className="text-sm text-gray-700">
-                        ケア活動が専門的スキルにどのように変換されるかについての詳細情報、またはこのポートフォリオについて詳しく話し合うには、
-                        {user.name}（{user.email}）までご連絡ください。
+                        スキル内容や経歴についてさらに詳しい情報が必要な場合は、
+                        {user.name}（{user.email}
+                        ）までお気軽にお問い合わせください。
                       </p>
                     </div>
                   </div>

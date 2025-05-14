@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Env } from "./db/client";
-import { usersRoutes } from "./routes/getUsers";
+import { usersRoutes } from "./routes/users";
 import { activitiesRoutes } from "./routes/activities";
+import { portfolioRoutes } from "./routes/portfolio";
 
 const app = new Hono<{ Bindings: Env }>()
   .use(
@@ -20,7 +21,8 @@ const app = new Hono<{ Bindings: Env }>()
   )
   // APIルート登録
   .route("/api/", usersRoutes)
-  .route("/api/", activitiesRoutes);
+  .route("/api/", activitiesRoutes)
+  .route("/api/", portfolioRoutes);
 
 export default app;
 export type AppType = typeof app;

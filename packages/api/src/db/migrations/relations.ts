@@ -11,6 +11,7 @@ export const careActivitiesRelations = relations(careActivities, ({one, many}) =
 
 export const usersRelations = relations(users, ({many}) => ({
 	careActivities: many(careActivities),
+	skills: many(skills),
 }));
 
 export const activitySkillsRelations = relations(activitySkills, ({one}) => ({
@@ -24,9 +25,13 @@ export const activitySkillsRelations = relations(activitySkills, ({one}) => ({
 	}),
 }));
 
-export const skillsRelations = relations(skills, ({many}) => ({
+export const skillsRelations = relations(skills, ({one, many}) => ({
 	activitySkills: many(activitySkills),
 	bizEquivalents: many(bizEquivalents),
+	user: one(users, {
+		fields: [skills.userId],
+		references: [users.id]
+	}),
 }));
 
 export const bizEquivalentsRelations = relations(bizEquivalents, ({one}) => ({

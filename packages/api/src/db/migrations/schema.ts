@@ -95,4 +95,12 @@ export const skills = pgTable("skills", {
 	color: text(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	score: bigint({ mode: "number" }),
-});
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	userId: bigint("user_id", { mode: "number" }),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "skills_user_id_fkey"
+		}),
+]);
