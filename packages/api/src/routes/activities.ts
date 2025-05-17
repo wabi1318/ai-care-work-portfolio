@@ -5,8 +5,17 @@ import {
   careActivities,
   activitySkills,
   skills,
+  users,
 } from "../db/migrations/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc, sum, count } from "drizzle-orm";
+
+// 発揮傾向を判定する関数
+function getTendency(count: number): string {
+  if (count >= 15) return "強く見られる";
+  if (count >= 10) return "よく見られる";
+  if (count >= 5) return "少し見られる";
+  return "まれに見られる";
+}
 
 export const activitiesRoutes = new Hono<{ Bindings: Env }>()
   // スキル一覧取得
@@ -108,14 +117,34 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
             ? Number(existingSkill.count)
             : 0;
           const newCount = currentCount + 1;
+          const tendency = getTendency(newCount);
 
           console.log(
-            `スキル「${skillData.name}」のカウントを更新: ${currentCount} → ${newCount}`
+            `スキル「${skillData.name}」のカウントを更新: ${currentCount} → ${newCount}, 発揮傾向: ${tendency}`
           );
+          console.log(`受信したスキル説明: ${skillData.description || "なし"}`);
+          console.log(
+            `既存のスキル説明: ${existingSkill.description || "なし"}`
+          );
+
+          // 説明文の更新ロジック
+          // 新しい説明文がある場合は使用、なければ既存の説明文を保持
+          const updatedDescription =
+            skillData.description || existingSkill.description;
 
           await db
             .update(skills)
-            .set({ count: newCount })
+            .set({
+              count: newCount,
+              tendency: tendency,
+              // アイコンが送信されていて、存在するスキルにアイコンがない場合は更新
+              icon:
+                !existingSkill.icon && skillData.icon
+                  ? skillData.icon
+                  : existingSkill.icon,
+              // 説明文も更新
+              description: updatedDescription,
+            })
             .where(eq(skills.id, existingSkill.id))
             .returning();
 
@@ -128,15 +157,26 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
           console.log(`更新後のスキル情報:`, existingSkill);
         } else {
           // スキルが存在しない場合は新規作成（countを1で初期化）
+          const initialCount = 1;
+          const initialTendency = getTendency(initialCount);
+
+          console.log(
+            `新規スキル「${skillData.name}」を作成: 説明=${skillData.description || "なし"}`
+          );
+
           [existingSkill] = await db
             .insert(skills)
             .values({
               name: skillData.name,
-              category: "自動検出", // デフォルトカテゴリ
-              count: 1, // 初回利用で1を設定
+              count: initialCount, // 初回利用で1を設定
+              tendency: initialTendency, // 初回の発揮傾向を設定
               description: skillData.description || null, // 説明文を保存
+              icon: skillData.icon || null, // アイコン情報を保存
+              userId: userId, // ユーザーIDを関連付け
             })
             .returning();
+
+          console.log(`作成されたスキル情報:`, existingSkill);
         }
 
         if (!existingSkill) {
@@ -148,10 +188,8 @@ export const activitiesRoutes = new Hono<{ Bindings: Env }>()
         await db.insert(activitySkills).values({
           activityId: savedActivity.id,
           skillId: existingSkill.id,
-          tendency: skillData.tendency,
           relevance: skillData.relevance,
           reason: skillData.reason,
-          source: "LLM分析", // ソース情報
         });
       }
 

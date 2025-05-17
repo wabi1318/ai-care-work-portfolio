@@ -10,6 +10,7 @@ interface Skill {
   category?: string;
   count?: number;
   description?: string;
+  icon?: string;
 }
 
 // スキル定義の配列
@@ -17,30 +18,37 @@ const skillDefinitions = [
   {
     name: "マルチタスク管理能力",
     definition: "複数の作業を同時に進行し、適切に切り替えて遂行する能力",
+    icon: "layers",
   },
   {
     name: "問題解決・危機対応力",
     definition: "課題を発見し、冷静に対応策を立案・実行する能力",
+    icon: "brain",
   },
   {
     name: "コミュニケーション能力",
     definition: "相手の話を理解し、自分の考えを明確に伝える能力",
+    icon: "message-square",
   },
   {
     name: "忍耐力・感情マネジメント",
     definition: "困難な状況下でも冷静さと前向きさを保つ能力",
+    icon: "shield",
   },
   {
     name: "計画力・時間管理能力",
     definition: "目標達成に向けて計画を立て、優先順位を整理して遂行する能力",
+    icon: "clock",
   },
   {
     name: "共感・傾聴力",
     definition: "相手の立場や感情に寄り添い、丁寧に話を聞く能力",
+    icon: "ear",
   },
   {
     name: "サポート力",
     definition: "他者の立場に立ち、必要に応じて支援・補助を行う能力",
+    icon: "hand-helping",
   },
 ];
 
@@ -50,6 +58,27 @@ function getTendency(count: number): string {
   if (count >= 10) return "よく見られる";
   if (count >= 5) return "少し見られる";
   return "まれに見られる";
+}
+
+// スキル名からアイコンを取得する関数
+function getSkillIcon(skillName: string): string {
+  // 定義済みスキルから検索
+  const definedSkill = skillDefinitions.find(
+    (skill) => skill.name === skillName
+  );
+  if (definedSkill && definedSkill.icon) {
+    return definedSkill.icon;
+  }
+  // デフォルトアイコン
+  return "sparkles";
+}
+
+// スキル定義をLLMに渡す際にアイコン情報を除外する関数
+function getSkillDefinitionsForLLM() {
+  return skillDefinitions.map(({ name, definition }) => ({
+    name,
+    definition,
+  }));
 }
 
 // バックエンドAPIからスキル一覧を取得する関数
@@ -122,7 +151,7 @@ export async function POST(req: Request) {
 
 **スキルの抽出優先順位:**
 1. 以下のスキル定義を最優先で参照してください：
-${JSON.stringify(skillDefinitions, null, 2)}
+${JSON.stringify(getSkillDefinitionsForLLM(), null, 2)}
 
 2. 次に、データベースに登録されている以下のスキルを参照してください：
 ${skillNames.length > 0 ? skillNames.join("、") : "（登録済みスキルはありません）"}
@@ -187,9 +216,12 @@ JSON形式で以下の情報を返してください。
       const result = JSON.parse(resultText);
       console.log("result", result);
 
-      // 各スキルに発揮傾向を追加
+      // 各スキルに発揮傾向とアイコンを追加
       if (result.skills && Array.isArray(result.skills)) {
         result.skills = result.skills.map((skill: any) => {
+          // スキル名からアイコンを取得
+          const icon = getSkillIcon(skill.name);
+
           // DBに登録されているスキルを検索
           const dbSkill = allSkills.find(
             (s: Skill) => s.name.toLowerCase() === skill.name.toLowerCase()
@@ -202,10 +234,11 @@ JSON形式で以下の情報を返してください。
             tendency = getTendency(Number(dbSkill.count));
           }
 
-          // スキルに発揮傾向を追加
+          // スキルに発揮傾向とアイコンを追加
           return {
             ...skill,
             tendency,
+            icon,
             // DBに登録済みのスキルの場合は既存の説明を使用
             description: dbSkill?.description || skill.description,
           };

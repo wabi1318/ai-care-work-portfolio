@@ -48,10 +48,8 @@ export const activitySkills = pgTable("activity_skills", {
 	activityId: bigint("activity_id", { mode: "number" }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	skillId: bigint("skill_id", { mode: "number" }),
-	tendency: text(),
 	relevance: text(),
 	reason: text(),
-	source: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
@@ -86,17 +84,14 @@ export const skills = pgTable("skills", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "skills_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
 	name: text(),
-	category: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	count: bigint({ mode: "number" }),
 	description: text(),
 	icon: text(),
-	color: text(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	score: bigint({ mode: "number" }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	userId: bigint("user_id", { mode: "number" }),
+	tendency: text().default('まれに見られる'),
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],

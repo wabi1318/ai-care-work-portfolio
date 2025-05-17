@@ -1,19 +1,7 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
+import { Card, CardContent } from "@workspace/ui/components/card";
 import {
   BarChart2,
   Brain,
@@ -24,6 +12,15 @@ import {
   Briefcase,
   FileText,
   Loader2,
+  Layers,
+  Puzzle,
+  Shield,
+  Ear,
+  HelpingHand,
+  Sparkles,
+  HandHelping,
+  MessageCircle,
+  LucideIcon,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import TopHeader from "@/components/TopHeader";
@@ -46,7 +43,8 @@ type PortfolioData = {
     tendency: string;
     description: string;
     icon: string;
-    color: string;
+    color?: string;
+    count?: number;
   }>;
   experiences: Array<{
     id: number;
@@ -56,10 +54,7 @@ type PortfolioData = {
     starStatement: string;
     skillName: string;
   }>;
-  bizEquivalents?: Array<{
-    careSkill: string;
-    bizEquivalent: string;
-  }>;
+  customSummaryText?: string | null;
 };
 
 // デフォルトデータ
@@ -82,6 +77,7 @@ const defaultData: PortfolioData = {
         "品質と細部への注意を維持しながら、複数の同時責任を一貫して管理。専門的な環境でのプロジェクト管理スキルに相当します。",
       icon: "BarChart2",
       color: "rose",
+      count: 20,
     },
     {
       id: 2,
@@ -91,6 +87,7 @@ const defaultData: PortfolioData = {
         "状況を迅速に分析し、プレッシャーの下で効果的な解決策を実施する強い能力。予期せぬケア状況の処理を通じて実証されています。",
       icon: "Brain",
       color: "blue",
+      count: 12,
     },
     {
       id: 3,
@@ -100,6 +97,7 @@ const defaultData: PortfolioData = {
         "様々な相手やストレスの多い状況で効果的にコミュニケーションする優れた能力。顧客や関係者とのコミュニケーションに直接転用できます。",
       icon: "MessageSquare",
       color: "green",
+      count: 18,
     },
     {
       id: 4,
@@ -109,6 +107,7 @@ const defaultData: PortfolioData = {
         "複雑なスケジュールと物流を調整する能力が証明された優れた組織力。プロジェクト計画とリソース配分に適用可能です。",
       icon: "Clock",
       color: "purple",
+      count: 10,
     },
   ],
   experiences: [
@@ -163,28 +162,6 @@ const defaultData: PortfolioData = {
       skillName: "コミュニケーションスキル",
     },
   ],
-  bizEquivalents: [
-    {
-      careSkill: "危機管理",
-      bizEquivalent: "リスクマネジメント",
-    },
-    {
-      careSkill: "対立解決",
-      bizEquivalent: "交渉・調停能力",
-    },
-    {
-      careSkill: "情報管理",
-      bizEquivalent: "情報システム管理",
-    },
-    {
-      careSkill: "マルチタスク能力",
-      bizEquivalent: "プロジェクト管理",
-    },
-    {
-      careSkill: "コミュニケーションスキル",
-      bizEquivalent: "クライアント/チームコミュニケーション",
-    },
-  ],
 };
 
 export default function Portfolio() {
@@ -206,6 +183,39 @@ export default function Portfolio() {
       }
 
       const apiData = await response.json();
+      console.log("APIレスポンス:", apiData);
+
+      // トップスキルからcoreSkillsを生成
+      const fetchedCoreSkills = apiData.topSkills
+        ? apiData.topSkills.map((skill: any, index: number) => {
+            // アイコンのデフォルト値を設定
+            const icons = ["BarChart2", "Brain", "MessageSquare", "Clock"];
+            const defaultIcon = icons[index % icons.length];
+
+            // カウント値を取得（なければ0）
+            const skillCount = skill.skillCount ? Number(skill.skillCount) : 0;
+
+            // 発揮傾向を取得（APIのskillTendencyが優先、なければカウントから算出）
+            const skillTendency = skill.skillTendency;
+
+            console.log(
+              `スキル「${skill.skillName}」の傾向: ${skillTendency}, カウント: ${skillCount}`
+            );
+
+            return {
+              id: skill.id || index + 1,
+              name: skill.skillName || skill.name,
+              tendency: skillTendency,
+              description:
+                skill.skillDescription ||
+                skill.description ||
+                "説明はありません",
+              icon: skill.skillIcon || skill.icon || defaultIcon,
+              count: skillCount,
+              // 色はクライアント側で順番に応じて設定するため不要
+            };
+          })
+        : [];
 
       // APIデータとデフォルトデータをマージ
       setPortfolioData({
@@ -214,9 +224,11 @@ export default function Portfolio() {
           totalActivities: apiData.summary?.totalActivities || 0,
           totalHours: apiData.summary?.totalHours || 0,
           topSkills: apiData.topSkills?.map(
-            (skill: { skillName: string }) => skill.skillName
+            (skill: any) => skill.skillName || skill.name || "不明なスキル"
           ) || ["データなし"],
         },
+        coreSkills: fetchedCoreSkills,
+        customSummaryText: apiData.generatedSkillSummary,
       });
 
       setError(null);
@@ -235,15 +247,28 @@ export default function Portfolio() {
     fetchPortfolioData();
   }, []); // 空の依存配列で一度だけ実行
 
-  const { user, summary, coreSkills, experiences } = portfolioData;
+  const { user, summary, coreSkills, experiences, customSummaryText } =
+    portfolioData;
 
   // アイコンマッピング
-  const iconMap = {
+  const iconMap: Record<string, LucideIcon> = {
     BarChart2: BarChart2,
     Brain: Brain,
     MessageSquare: MessageSquare,
     Clock: Clock,
     Award: Award,
+    // スキル定義のアイコンを追加
+    layers: Layers,
+    brain: Brain,
+    puzzle: Puzzle,
+    "message-circle": MessageCircle,
+    "message-square": MessageSquare,
+    shield: Shield,
+    clock: Clock,
+    ear: Ear,
+    "helping-hand": HelpingHand,
+    "hand-helping": HandHelping,
+    sparkles: Sparkles,
   };
 
   if (isLoading) {
@@ -289,7 +314,7 @@ export default function Portfolio() {
                 <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-4xl mx-auto">
                   <div className="mb-8">
                     <h4 className="text-lg font-semibold mb-3">
-                      あなたの実績とスキル概要
+                      実績とスキル概要
                     </h4>
                     <div className="flex flex-col md:flex-row gap-4 mb-4">
                       <div className="bg-blue-50 rounded-lg p-4 flex-1 flex items-center gap-3">
@@ -327,38 +352,44 @@ export default function Portfolio() {
                       </div>
                     </div>
                     <p className="text-gray-700">
-                      {summary.totalHours}
-                      時間以上の記録されたケア経験を持つ献身的な介護者で、
-                      {summary.topSkills.join("、")}
-                      において優れたスキルを発揮します。複雑な状況を管理し、物流を調整し、プレッシャーの下で冷静さを保つ能力が証明されています。適応性、感情知性、効率的なリソース管理を重視する専門的な環境でこれらの転用可能なスキルを活かすことを目指しています。
+                      {customSummaryText ||
+                        `${summary.totalHours}
+                        時間以上の記録されたケア経験を持つ献身的な介護者で、
+                        ${summary.topSkills.join("、")}
+                        において優れたスキルを発揮します。複雑な状況を管理し、物流を調整し、プレッシャーの下で冷静さを保つ能力が証明されています。適応性、感情知性、効率的なリソース管理を重視する専門的な環境でこれらの転用可能なスキルを活かすことを目指しています。`}
                     </p>
                   </div>
 
                   {/* コアコンピテンシーセクション */}
                   <div className="mb-8">
                     <h4 className="text-lg font-semibold mb-3">
-                      あなたの主要スキルと発揮傾向
+                      主要スキルと発揮傾向
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {coreSkills.map((skill) => {
-                        const IconComponent =
-                          iconMap[skill.icon as keyof typeof iconMap] || Award;
+                      {coreSkills.map((skill, index) => {
+                        // DBから返されたアイコン名を使用
+                        const IconComponent = iconMap[skill.icon] || Sparkles;
+                        // 色の配列を定義（順番固定）
+                        const colors = ["rose", "blue", "green", "purple"];
+                        // インデックスに基づいて色を選択（配列の範囲を超える場合は最初の色に戻る）
+                        const color = colors[index % colors.length];
+
                         return (
                           <div key={skill.id}>
                             <div className="flex justify-between items-center mb-2">
                               <div className="flex items-center gap-2">
                                 <div
-                                  className={`bg-${skill.color}-100 p-1.5 rounded-full`}
+                                  className={`bg-${color}-100 p-1.5 rounded-full`}
                                 >
                                   <IconComponent
-                                    className={`text-${skill.color}-600`}
+                                    className={`text-${color}-600`}
                                     size={16}
                                   />
                                 </div>
                                 <h3 className="font-medium">{skill.name}</h3>
                               </div>
                               <span
-                                className={`text-sm px-2 py-1 rounded-full bg-${skill.color}-50 text-${skill.color}-700 border border-${skill.color}-200`}
+                                className={`text-sm px-2 py-1 rounded-full bg-${color}-50 text-${color}-700 border border-${color}-200`}
                               >
                                 {skill.tendency}
                               </span>
@@ -422,45 +453,6 @@ export default function Portfolio() {
                       ))}
                     </div>
                   </div>
-
-                  {/* ビジネス転換マッピングセクション */}
-                  {/* <div className="mb-8">
-                    <h4 className="text-lg font-semibold mb-3">
-                      ケアスキルをビジネススキルに変換
-                    </h4>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              ケアスキル
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              等価なビジネススキル
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {bizEquivalents.map((item, index) => (
-                            <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {item.careSkill}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.bizEquivalent}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div> */}
 
                   {/* フッターセクション */}
                   <div>
