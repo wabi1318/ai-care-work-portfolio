@@ -64,6 +64,67 @@ async function generateSkillSummaryWithLLM(data: {
   }
 }
 
+// スキルごとの具体的エピソード生成関数
+async function generateSkillEpisodeWithLLM(skill: any) {
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI APIキーが設定されていません");
+      return null;
+    }
+
+    if (!skill.episodes || skill.episodes.length === 0) {
+      return null;
+    }
+
+    // エピソードデータから情報を抽出
+    const episodeTexts = skill.episodes
+      .map((ep: any) => {
+        const activity = ep.activityDetails || {};
+        return `
+      - 活動内容: ${activity.activityContent || "不明"}
+      - 問題点: ${activity.problem || "特になし"}
+      - 解決策: ${activity.solution || "特になし"}
+      - 結果: ${activity.result || "不明"}
+      - このスキルが発揮された理由: ${ep.reason || "不明"}
+      `;
+      })
+      .join("\n");
+
+    // systemプロンプト
+    const systemPrompt =
+      "あなたは、家事・育児・介護などの無償ケア労働で培われたスキルを、職場で活用できる具体的な能力として特定し、可視化するAIアシスタントです。提供された活動エピソードに基づき、そのスキルを発揮した具体的な状況を魅力的なSTAR形式のストーリーに変換してください。";
+
+    // ユーザープロンプト
+    const userPrompt = `以下に、「${skill.skillName}」というスキルに関連する活動エピソードの情報を示します。
+    このデータを元に、STAR形式（状況・課題・行動・結果）で具体的なエピソードを作成してください。
+    
+    --- エピソード情報 ---
+    ${episodeTexts}
+    
+    上記の情報を統合して、「${skill.skillName}」スキルを発揮した具体的な場面について、以下の要素を含む約200文字のストーリーを作成してください：
+    
+    1. 具体的な状況（S）と直面した課題（T）
+    2. どのように「${skill.skillName}」を活用して行動したか（A）
+    3. それによって得られた具体的な結果（R）
+    4. このスキルがビジネス環境でどのように活かせるか
+    
+    実際に起きた状況に基づいたリアルなストーリーを、第一人称で書いてください。あくまで家庭や日常での出来事をベースにしてください。
+    `;
+
+    const { text } = await generateText({
+      model: openai("gpt-4o-mini"),
+      system: systemPrompt,
+      prompt: userPrompt,
+      temperature: 0.7,
+    });
+
+    return text || null;
+  } catch (error) {
+    console.error(`スキル「${skill.skillName}」のエピソード生成エラー:`, error);
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -94,8 +155,23 @@ export async function GET(req: Request) {
 
       // 生成されたスキル概要文をレスポンスに追加
       data.generatedSkillSummary = skillSummary;
+
+      // 各スキルごとに具体的なエピソードをLLMで生成
+      const skillsWithGeneratedEpisodes = await Promise.all(
+        data.topSkills.map(async (skill: any) => {
+          const episodeStory = await generateSkillEpisodeWithLLM(skill);
+          return {
+            ...skill,
+            generatedEpisode: episodeStory,
+          };
+        })
+      );
+
+      // 生成したエピソード付きのスキルデータで置き換え
+      data.topSkills = skillsWithGeneratedEpisodes;
     }
 
+    console.log(data);
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error("ポートフォリオ取得エラー:", error);

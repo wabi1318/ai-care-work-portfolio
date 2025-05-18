@@ -45,6 +45,7 @@ type PortfolioData = {
     icon: string;
     color?: string;
     count?: number;
+    generatedEpisode?: string | null;
   }>;
   experiences: Array<{
     id: number;
@@ -198,12 +199,8 @@ export default function Portfolio() {
             // 発揮傾向を取得（APIのskillTendencyが優先、なければカウントから算出）
             const skillTendency = skill.skillTendency;
 
-            console.log(
-              `スキル「${skill.skillName}」の傾向: ${skillTendency}, カウント: ${skillCount}`
-            );
-
             return {
-              id: skill.id || index + 1,
+              id: skill.skillId || index + 1,
               name: skill.skillName || skill.name,
               tendency: skillTendency,
               description:
@@ -212,10 +209,31 @@ export default function Portfolio() {
                 "説明はありません",
               icon: skill.skillIcon || skill.icon || defaultIcon,
               count: skillCount,
+              // 生成されたエピソードを追加
+              generatedEpisode: skill.generatedEpisode || null,
               // 色はクライアント側で順番に応じて設定するため不要
             };
           })
         : [];
+
+      // 生成されたエピソードからexperiencesを作成
+      const generatedExperiences = fetchedCoreSkills
+        .filter((skill: any) => skill.generatedEpisode)
+        .map((skill: any, index: number) => {
+          // 色の配列を定義（順番固定）
+          const colors = ["rose", "blue", "green", "purple", "amber"];
+          // インデックスに基づいて色を選択
+          const color = colors[index % colors.length];
+
+          return {
+            id: index + 1,
+            title: skill.name,
+            summary: skill.description || `${skill.name}に関する概要`,
+            color: color,
+            starStatement: skill.generatedEpisode,
+            skillName: skill.name,
+          };
+        });
 
       // APIデータとデフォルトデータをマージ
       setPortfolioData({
@@ -228,6 +246,10 @@ export default function Portfolio() {
           ) || ["データなし"],
         },
         coreSkills: fetchedCoreSkills,
+        experiences:
+          generatedExperiences.length > 0
+            ? generatedExperiences
+            : defaultData.experiences,
         customSummaryText: apiData.generatedSkillSummary,
       });
 
