@@ -25,6 +25,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import TopHeader from "@/components/TopHeader";
 import { useEffect, useState } from "react";
+import PortfolioLoading from "./loading";
 
 // データ型の定義
 type PortfolioData = {
@@ -294,16 +295,7 @@ export default function Portfolio() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto" />
-          <p className="mt-4 text-gray-600">
-            ポートフォリオデータを読み込み中...
-          </p>
-        </div>
-      </div>
-    );
+    return <PortfolioLoading />;
   }
 
   if (error) {
