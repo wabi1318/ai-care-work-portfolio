@@ -18,5 +18,9 @@
   "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "html2canvas-pro": "^1.5.11",
+    "jspdf": "^3.0.1"
   }
 }
