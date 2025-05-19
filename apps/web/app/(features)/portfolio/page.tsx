@@ -22,8 +22,8 @@ import {
   MessageCircle,
   LucideIcon,
 } from "lucide-react";
-import Sidebar from "@/components/Sidebar";
-import TopHeader from "@/components/TopHeader";
+import Sidebar from "@/app/components/Sidebar";
+import TopHeader from "@/app/components/TopHeader";
 import { useEffect, useState, useRef } from "react";
 import PortfolioLoading from "./loading";
 import html2canvas from "html2canvas-pro";

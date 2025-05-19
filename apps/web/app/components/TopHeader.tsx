@@ -7,7 +7,7 @@ import {
 
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
-import { Plus, Edit, MessageSquare } from "lucide-react";
+import { Plus, Edit, MessageSquare, Calendar } from "lucide-react";
 
 export default function TopHeader() {
   return (
@@ -41,6 +41,15 @@ export default function TopHeader() {
               >
                 <MessageSquare size={16} />
                 AIと会話して記録
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/calendar/insights"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Calendar size={16} />
+                カレンダーから記録
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

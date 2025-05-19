@@ -14,6 +14,13 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
+import {
   ArrowLeft,
   Calendar,
   Check,
@@ -67,6 +74,11 @@ export default function CalendarInsights() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [careCandidates, setCareCandidates] = useState<CareCandidate[]>([]);
+  const [analysisResults, setAnalysisResults] = useState<any[]>([]);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedResults, setSelectedResults] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const fetchCalendarEvents = async () => {
     setIsLoading(true);
@@ -128,7 +140,7 @@ export default function CalendarInsights() {
           ...candidate,
           problem: "",
           solution: "",
-          emotion: "",
+          emotion: "選択なし",
           result: "",
           expanded: false,
         })
@@ -220,9 +232,93 @@ export default function CalendarInsights() {
       );
 
       toast({
-        title: "必須項目が未入力です",
+        title: "入力エラー",
         description:
           "発生した課題、解決策、成果や家族の反応は必須項目です。すべての選択した活動について入力してください。",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // APIに送信するデータ形式に変換
+    const formattedActivities = selectedCandidates.map((candidate) => {
+      // 日付部分のみを抽出
+      const date = new Date(candidate.start).toISOString().split("T")[0];
+
+      return {
+        date,
+        activity_content: candidate.eventSummary,
+        duration: candidate.duration,
+        problem: candidate.problem,
+        solution: candidate.solution,
+        emotion: candidate.emotion === "選択なし" ? null : candidate.emotion,
+        result: candidate.result,
+      };
+    });
+    console.log("formattedActivities", formattedActivities);
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/calendar/activities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ activities: formattedActivities }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`エラー: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.results) {
+        // 分析結果を状態に保存
+        setAnalysisResults(data.results);
+
+        // デフォルトですべての結果を選択済みにする
+        const initialSelection = data.results.reduce(
+          (acc: { [key: string]: boolean }, result: any, index: number) => {
+            if (result.success) {
+              acc[index] = true;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        setSelectedResults(initialSelection);
+
+        // isSubmittingをfalseに戻してから分析結果表示モードに切り替え
+        setIsSubmitting(false);
+        setShowAnalysis(true);
+      } else {
+        throw new Error(data.error || "活動の分析に失敗しました");
+      }
+    } catch (error) {
+      console.error("保存エラー:", error);
+      toast({
+        title: "エラーが発生しました",
+        description:
+          error instanceof Error ? error.message : "もう一度お試しください。",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
+  };
+
+  // 選択された分析結果のみを保存
+  const saveSelectedAnalysisResults = async () => {
+    const resultsToSave = Object.entries(selectedResults)
+      .filter(([_, selected]) => selected)
+      .map(([index]) => analysisResults[parseInt(index)]);
+
+    if (resultsToSave.length === 0) {
+      toast({
+        title: "選択されたケア活動がありません",
+        description: "少なくとも1つのケア活動を選択してください。",
         variant: "destructive",
       });
       return;
@@ -231,36 +327,50 @@ export default function CalendarInsights() {
     setIsSubmitting(true);
 
     try {
-      // APIを呼び出して選択された活動を保存
-      const response = await fetch("/api/activities/save-from-calendar", {
+      // 最終的な保存API（/api/activities）に保存する
+      const activitiesToSave = resultsToSave
+        .filter((result) => result.success) // 成功した分析結果のみ
+        .map((result) => ({
+          date: result.activity.date,
+          activity_content: result.activity.activity_content,
+          duration: result.activity.duration,
+          problem: result.activity.problem,
+          solution: result.activity.solution,
+          emotion: result.activity.emotion,
+          result: result.activity.result,
+          skills: result.analysis.skills,
+          resume_summary: result.analysis.resume_summary,
+        }));
+
+      // 正しいエンドポイントで保存
+      const saveResponse = await fetch("/api/calendar/activities/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ activities: selectedCandidates }),
+        body: JSON.stringify({ activities: activitiesToSave }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "保存に失敗しました");
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json();
+        throw new Error(errorData.error || "活動の保存に失敗しました");
       }
 
-      const data = await response.json();
-
       toast({
-        title: "活動が記録されました",
-        description: `${selectedCandidates.length}件のケア活動が正常に記録されました。`,
-        action: (
-          <ToastAction altText="活動一覧を見る">
-            <Link href="/activities">活動一覧を見る</Link>
-          </ToastAction>
-        ),
+        title: "ケア活動を保存しました",
+        description: `${resultsToSave.length}件のケア活動を保存しました。`,
       });
 
-      // 活動一覧ページにリダイレクト
+      // 分析モードを閉じる
+      setShowAnalysis(false);
+      // 保存完了後、状態をリセット
+      setAnalysisResults([]);
+      setSelectedResults({});
+
+      // ダッシュボードに戻る
       router.push("/activities");
     } catch (error) {
-      console.error("保存エラー:", error);
+      console.error("最終保存エラー:", error);
       toast({
         title: "保存に失敗しました",
         description:
@@ -270,6 +380,20 @@ export default function CalendarInsights() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 分析結果選択の切り替え
+  const toggleResultSelection = (index: number) => {
+    setSelectedResults((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  // 分析モードを閉じる
+  const closeAnalysisMode = () => {
+    setShowAnalysis(false);
+    setIsSubmitting(false);
   };
 
   // 日付をフォーマット
@@ -302,218 +426,101 @@ export default function CalendarInsights() {
 
       <main className="container mx-auto py-8 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>予定表からのケア活動</CardTitle>
-                  <CardDescription>
-                    カレンダーから抽出されたケア活動候補です。確認して保存してください。
-                  </CardDescription>
+          {/* 分析結果モーダル */}
+          {showAnalysis ? (
+            <Card className="mb-6">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>スキル分析結果</CardTitle>
+                    <CardDescription>
+                      保存したい分析結果を選択してください
+                    </CardDescription>
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={fetchCalendarEvents}
-                  disabled={isLoading}
-                >
-                  <RefreshCw
-                    size={14}
-                    className={isLoading ? "animate-spin" : ""}
-                  />
-                  更新
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 text-rose-600 animate-spin mb-4" />
-                  <p className="text-gray-500">
-                    カレンダーからケア活動を抽出しています...
-                  </p>
-                </div>
-              ) : careCandidates.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-1">
-                    ケア活動が見つかりませんでした
-                  </h3>
-                  <p className="text-gray-500">
-                    カレンダーにケア活動と思われる予定がないか、まだ分析が完了していません。
-                  </p>
-                </div>
-              ) : (
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-6">
-                  <div className="space-y-4">
-                    {careCandidates.map((candidate) => (
-                      <div
-                        key={candidate.id}
-                        className="border border-gray-200 rounded-lg p-4 relative"
-                      >
+                  {analysisResults.map((result, index) => (
+                    <div
+                      key={index}
+                      className={`border ${
+                        !result.success
+                          ? "border-red-200 bg-red-50"
+                          : "border-gray-200"
+                      } rounded-lg p-4 relative`}
+                    >
+                      {result.success ? (
                         <div className="flex items-start gap-3">
                           <Checkbox
-                            id={`candidate-${candidate.id}`}
-                            checked={candidate.selected}
-                            onCheckedChange={() =>
-                              toggleCandidateSelection(candidate.id)
-                            }
+                            id={`result-${index}`}
+                            checked={selectedResults[index] || false}
+                            onCheckedChange={() => toggleResultSelection(index)}
                             className="mt-1"
                           />
                           <div className="flex flex-col w-full">
-                            <div className="flex justify-between w-full">
-                              <div className="flex-1">
-                                <Label
-                                  htmlFor={`candidate-${candidate.id}`}
-                                  className="font-medium text-gray-800 cursor-pointer mb-1"
-                                >
-                                  {candidate.eventSummary}
-                                </Label>
+                            <Label
+                              htmlFor={`result-${index}`}
+                              className="font-medium text-gray-800 cursor-pointer mb-1"
+                            >
+                              {result.activity.activity_content}
+                            </Label>
 
-                                <div className="flex items-center text-sm text-gray-600 mt-1 space-x-2">
-                                  <Badge
-                                    variant="outline"
-                                    className="flex items-center gap-1 bg-white"
-                                  >
-                                    <Clock size={14} className="shrink-0" />
-                                    <span>
-                                      {formatTime(candidate.start)} 〜{" "}
-                                      {formatTime(candidate.end)}
-                                    </span>
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  toggleCandidateExpanded(candidate.id)
-                                }
-                                className="ml-auto h-8 w-8 p-0"
-                              >
-                                {candidate.expanded ? (
-                                  <ChevronUp size={16} />
-                                ) : (
-                                  <ChevronDown size={16} />
+                            <div className="mt-3 border-t pt-3">
+                              <h4 className="text-sm font-medium mb-2">
+                                抽出されたスキル
+                              </h4>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {result.analysis.skills.map(
+                                  (skill: any, skillIndex: number) => (
+                                    <Badge
+                                      key={skillIndex}
+                                      variant="secondary"
+                                      className="px-3 py-1"
+                                    >
+                                      {skill.name}
+                                    </Badge>
+                                  )
                                 )}
-                              </Button>
-                            </div>
-
-                            {candidate.expanded && (
-                              <div className="mt-4 space-y-3 border-t pt-3">
-                                <div>
-                                  <Label
-                                    htmlFor={`problem-${candidate.id}`}
-                                    className="text-sm mb-1 block"
-                                  >
-                                    発生した課題
-                                    <span className="text-rose-500 ml-1">
-                                      *
-                                    </span>
-                                  </Label>
-                                  <Textarea
-                                    id={`problem-${candidate.id}`}
-                                    value={candidate.problem}
-                                    onChange={(e) =>
-                                      updateCandidateDetail(
-                                        candidate.id,
-                                        "problem",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="どのような課題が発生しましたか？"
-                                    className={`resize-none ${candidate.selected && !candidate.problem?.trim() ? "border-rose-500" : ""}`}
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label
-                                    htmlFor={`solution-${candidate.id}`}
-                                    className="text-sm mb-1 block"
-                                  >
-                                    解決策
-                                    <span className="text-rose-500 ml-1">
-                                      *
-                                    </span>
-                                  </Label>
-                                  <Textarea
-                                    id={`solution-${candidate.id}`}
-                                    value={candidate.solution}
-                                    onChange={(e) =>
-                                      updateCandidateDetail(
-                                        candidate.id,
-                                        "solution",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="どのように対応しましたか？"
-                                    className={`resize-none ${candidate.selected && !candidate.solution?.trim() ? "border-rose-500" : ""}`}
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label
-                                    htmlFor={`emotion-${candidate.id}`}
-                                    className="text-sm mb-1 block"
-                                  >
-                                    感情・気分（任意）
-                                  </Label>
-                                  <Textarea
-                                    id={`emotion-${candidate.id}`}
-                                    value={candidate.emotion}
-                                    onChange={(e) =>
-                                      updateCandidateDetail(
-                                        candidate.id,
-                                        "emotion",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="どのような感情を抱きましたか？"
-                                    className="resize-none"
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label
-                                    htmlFor={`result-${candidate.id}`}
-                                    className="text-sm mb-1 block"
-                                  >
-                                    成果や家族の反応
-                                    <span className="text-rose-500 ml-1">
-                                      *
-                                    </span>
-                                  </Label>
-                                  <Textarea
-                                    id={`result-${candidate.id}`}
-                                    value={candidate.result}
-                                    onChange={(e) =>
-                                      updateCandidateDetail(
-                                        candidate.id,
-                                        "result",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="どのような結果になりましたか？"
-                                    className={`resize-none ${candidate.selected && !candidate.result?.trim() ? "border-rose-500" : ""}`}
-                                  />
-                                </div>
                               </div>
-                            )}
+
+                              <h4 className="text-sm font-medium mb-2">
+                                職務経歴書向け文例
+                              </h4>
+                              <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                                {result.analysis.resume_summary.map(
+                                  (summary: string, summaryIndex: number) => (
+                                    <li key={summaryIndex}>{summary}</li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ) : (
+                        <div className="text-red-600 text-sm">
+                          <p className="font-medium">分析に失敗しました</p>
+                          <p>{result.error}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
 
-                  <div className="pt-4 flex justify-end">
+                  <div className="pt-4 flex justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={closeAnalysisMode}
+                      disabled={isSubmitting}
+                    >
+                      キャンセル
+                    </Button>
                     <Button
                       className="bg-rose-600 hover:bg-rose-700"
-                      onClick={saveSelectedCandidates}
+                      onClick={saveSelectedAnalysisResults}
                       disabled={
                         isSubmitting ||
-                        careCandidates.filter((c) => c.selected).length === 0
+                        Object.values(selectedResults).filter(Boolean)
+                          .length === 0
                       }
                     >
                       {isSubmitting ? (
@@ -530,28 +537,264 @@ export default function CalendarInsights() {
                     </Button>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="mb-6">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>予定表からのケア活動</CardTitle>
+                    <CardDescription>
+                      カレンダーから抽出されたケア活動候補です。確認して保存してください。
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={fetchCalendarEvents}
+                    disabled={isLoading}
+                  >
+                    <RefreshCw
+                      size={14}
+                      className={isLoading ? "animate-spin" : ""}
+                    />
+                    更新
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 text-rose-600 animate-spin mb-4" />
+                    <p className="text-gray-500">
+                      カレンダーからケア活動を抽出しています...
+                    </p>
+                  </div>
+                ) : careCandidates.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-700 mb-1">
+                      ケア活動が見つかりませんでした
+                    </h3>
+                    <p className="text-gray-500">
+                      カレンダーにケア活動と思われる予定がないか、まだ分析が完了していません。
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      {careCandidates.map((candidate) => (
+                        <div
+                          key={candidate.id}
+                          className="border border-gray-200 rounded-lg p-4 relative"
+                        >
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              id={`candidate-${candidate.id}`}
+                              checked={candidate.selected}
+                              onCheckedChange={() =>
+                                toggleCandidateSelection(candidate.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex flex-col w-full">
+                              <div className="flex justify-between w-full">
+                                <div className="flex-1">
+                                  <Label
+                                    htmlFor={`candidate-${candidate.id}`}
+                                    className="font-medium text-gray-800 cursor-pointer mb-1"
+                                  >
+                                    {candidate.eventSummary}
+                                  </Label>
 
-          <div className="mt-6 flex justify-center">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                asChild
-              >
-                <Link href="/activity-log">手動で記録</Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                asChild
-              >
-                <Link href="/ai-chat">AIと会話して記録</Link>
-              </Button>
-            </div>
-          </div>
+                                  <div className="flex items-center text-sm text-gray-600 mt-1 space-x-2">
+                                    <Badge
+                                      variant="outline"
+                                      className="flex items-center gap-1 bg-white"
+                                    >
+                                      <Clock size={14} className="shrink-0" />
+                                      <span>
+                                        {formatTime(candidate.start)} 〜{" "}
+                                        {formatTime(candidate.end)}
+                                      </span>
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    toggleCandidateExpanded(candidate.id)
+                                  }
+                                  className="ml-auto h-8 w-8 p-0"
+                                >
+                                  {candidate.expanded ? (
+                                    <ChevronUp size={16} />
+                                  ) : (
+                                    <ChevronDown size={16} />
+                                  )}
+                                </Button>
+                              </div>
+
+                              {candidate.expanded && (
+                                <div className="mt-4 space-y-4 border-t pt-4">
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label
+                                      htmlFor={`problem-${candidate.id}`}
+                                      className="text-sm"
+                                    >
+                                      発生した課題
+                                    </Label>
+                                    <Textarea
+                                      id={`problem-${candidate.id}`}
+                                      value={candidate.problem}
+                                      onChange={(e) =>
+                                        updateCandidateDetail(
+                                          candidate.id,
+                                          "problem",
+                                          e.target.value
+                                        )
+                                      }
+                                      placeholder="例：朝起きられず準備が遅れた"
+                                      className="min-h-[80px] resize-none"
+                                      required
+                                    />
+                                  </div>
+
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label
+                                      htmlFor={`solution-${candidate.id}`}
+                                      className="text-sm"
+                                    >
+                                      解決策
+                                    </Label>
+                                    <Textarea
+                                      id={`solution-${candidate.id}`}
+                                      value={candidate.solution}
+                                      onChange={(e) =>
+                                        updateCandidateDetail(
+                                          candidate.id,
+                                          "solution",
+                                          e.target.value
+                                        )
+                                      }
+                                      placeholder="例：前日に服や持ち物を準備しておいた"
+                                      className="min-h-[80px] resize-none"
+                                      required
+                                    />
+                                  </div>
+
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label
+                                      htmlFor={`emotion-${candidate.id}`}
+                                      className="text-sm"
+                                    >
+                                      感情・気分（任意）
+                                    </Label>
+                                    <Select
+                                      value={candidate.emotion || "選択なし"}
+                                      onValueChange={(value) =>
+                                        updateCandidateDetail(
+                                          candidate.id,
+                                          "emotion",
+                                          value
+                                        )
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        id={`emotion-${candidate.id}`}
+                                      >
+                                        <SelectValue placeholder="選択してください" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="選択なし">
+                                          選択なし
+                                        </SelectItem>
+                                        <SelectItem value="喜び">
+                                          喜び
+                                        </SelectItem>
+                                        <SelectItem value="焦り">
+                                          焦り
+                                        </SelectItem>
+                                        <SelectItem value="不安">
+                                          不安
+                                        </SelectItem>
+                                        <SelectItem value="充実">
+                                          充実
+                                        </SelectItem>
+                                        <SelectItem value="疲労">
+                                          疲労
+                                        </SelectItem>
+                                        <SelectItem value="冷静">
+                                          冷静
+                                        </SelectItem>
+                                        <SelectItem value="イライラ">
+                                          イライラ
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label
+                                      htmlFor={`result-${candidate.id}`}
+                                      className="text-sm"
+                                    >
+                                      成果や家族の反応
+                                    </Label>
+                                    <Textarea
+                                      id={`result-${candidate.id}`}
+                                      value={candidate.result}
+                                      onChange={(e) =>
+                                        updateCandidateDetail(
+                                          candidate.id,
+                                          "result",
+                                          e.target.value
+                                        )
+                                      }
+                                      placeholder="例：時間通り送り届けることができた"
+                                      className="min-h-[80px] resize-none"
+                                      required
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-4 flex justify-end">
+                      <Button
+                        className="bg-rose-600 hover:bg-rose-700"
+                        onClick={saveSelectedCandidates}
+                        disabled={
+                          isSubmitting ||
+                          careCandidates.filter((c) => c.selected).length === 0
+                        }
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            分析中...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="mr-2 h-4 w-4" />
+                            活動を記録してスキル分析
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
