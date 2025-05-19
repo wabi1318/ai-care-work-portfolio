@@ -96,8 +96,6 @@ function analyzeCareActivity(event: any) {
   return {
     id: event.id,
     eventSummary: event.summary,
-    type: matchedCategory,
-    typeName: categoryTranslations[matchedCategory] || "その他",
     skills: skills.slice(0, 3), // 最大3つのスキルを選択
     duration: `${duration}分`,
     durationMinutes: duration,

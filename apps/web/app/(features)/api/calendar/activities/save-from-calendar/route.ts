@@ -11,6 +11,10 @@ type CareActivity = {
   durationMinutes: number;
   start: string;
   end: string;
+  problem?: string;
+  solution?: string;
+  emotion?: string;
+  result?: string;
 };
 
 export async function POST(req: Request) {
@@ -24,6 +28,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // 必須フィールドのバリデーション
+    const invalidActivities = activities.filter(
+      (activity: CareActivity) =>
+        !activity.problem?.trim() ||
+        !activity.solution?.trim() ||
+        !activity.result?.trim()
+    );
+
+    if (invalidActivities.length > 0) {
+      return NextResponse.json(
+        {
+          error: "必須項目が未入力です",
+          details: "発生した課題、解決策、成果や家族の反応は必須項目です。",
+          invalidIds: invalidActivities.map((activity) => activity.id),
+        },
+        { status: 400 }
+      );
+    }
+
     // 各活動を処理
     const savedActivities = await Promise.all(
       activities.map(async (activity: CareActivity) => {
@@ -31,21 +54,15 @@ export async function POST(req: Request) {
         const startDate = new Date(activity.start);
         const formattedDate = startDate.toISOString().split("T")[0];
 
-        // 問題と解決策の初期値
-        const problem = "カレンダーから自動抽出されたため詳細未記入";
-        const solution = "カレンダーから自動抽出されたため詳細未記入";
-        const emotion = "記録なし";
-        const result = "カレンダーから自動抽出されたため詳細未記入";
-
         // 活動データの整形
         const activityData = {
           date: formattedDate,
           activity_content: activity.description,
           duration: activity.durationMinutes,
-          problem,
-          solution,
-          emotion,
-          result,
+          problem: activity.problem,
+          solution: activity.solution,
+          emotion: activity.emotion || "記録なし",
+          result: activity.result,
           source: "calendar",
           source_id: activity.id,
           source_type: activity.type,
