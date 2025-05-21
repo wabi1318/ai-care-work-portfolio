@@ -171,7 +171,8 @@ const defaultData: PortfolioData = {
 export default function Portfolio() {
   const [portfolioData, setPortfolioData] =
     useState<PortfolioData>(defaultData);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPortfolioLoaded, setIsPortfolioLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const portfolioRef = useRef<HTMLDivElement>(null);
 
@@ -258,6 +259,7 @@ export default function Portfolio() {
       });
 
       setError(null);
+      setIsPortfolioLoaded(true);
     } catch (error) {
       console.error("Failed to fetch portfolio data:", error);
       setError(
@@ -311,11 +313,6 @@ export default function Portfolio() {
     }
   };
 
-  // コンポーネントマウント時に一度だけデータを取得
-  useEffect(() => {
-    fetchPortfolioData();
-  }, []); // 空の依存配列で一度だけ実行
-
   const { user, summary, coreSkills, experiences, customSummaryText } =
     portfolioData;
 
@@ -340,22 +337,6 @@ export default function Portfolio() {
     sparkles: Sparkles,
   };
 
-  if (isLoading) {
-    return <PortfolioLoading />;
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
-          <div className="text-red-500 text-xl mb-4">エラーが発生しました</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <Button onClick={fetchPortfolioData}>再試行</Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -367,170 +348,259 @@ export default function Portfolio() {
           <TopHeader />
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
-            <div className="flex justify-end mb-4">
-              <Button onClick={handleGeneratePdf} variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                PDFダウンロード
-              </Button>
-            </div>
-            <div>
-              {/* 専門的概要セクション */}
-              <Card>
-                <CardContent className="p-6">
+            {error ? (
+              <div className="text-center max-w-md p-6 mx-auto bg-white rounded-lg shadow-md">
+                <div className="text-red-500 text-xl mb-4">
+                  エラーが発生しました
+                </div>
+                <p className="text-gray-700 mb-4">{error}</p>
+                <Button onClick={fetchPortfolioData}>再試行</Button>
+              </div>
+            ) : isLoading ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="relative w-24 h-24 flex items-center justify-center mb-6">
+                  {/* 背景の光る円 */}
+                  <div className="absolute w-12 h-12 bg-rose-50 rounded-full animate-pulse"></div>
+
+                  {/* 中央のアイコン */}
+                  <div className="relative z-20 animate-bounce">
+                    <Brain className="h-10 w-10 text-rose-600" />
+                  </div>
+
+                  {/* 回転する軌道 - 外側 */}
+                  <div className="absolute w-24 h-24 rounded-full border border-rose-200 opacity-70"></div>
+
+                  {/* 回転する粒子 - 外側 */}
                   <div
-                    ref={portfolioRef}
-                    className="bg-white border border-gray-200 rounded-lg p-6 max-w-4xl mx-auto"
-                  >
-                    <div className="flex justify-between items-center mb-8">
-                      <h4 className="text-xl font-semibold">
-                        ケアスキルポートフォリオ
-                      </h4>
-                    </div>
-                    <div className="mb-8">
-                      <h4 className="text-lg font-semibold mb-3">
-                        実績とスキル概要
-                      </h4>
-                      <div className="flex flex-col md:flex-row gap-4 mb-4">
-                        <div className="bg-blue-50 rounded-lg p-4 flex-1 flex items-center gap-3">
-                          <div className="bg-blue-100 p-2 rounded-full">
-                            <FileText className="text-blue-600" size={20} />
-                          </div>
-                          <div>
-                            <p className="text-sm text-blue-800">活動記録数</p>
-                            <p className="font-bold text-xl">
-                              {summary.totalActivities}件
-                            </p>
-                          </div>
-                        </div>
-                        <div className="bg-green-50 rounded-lg p-4 flex-1 flex items-center gap-3">
-                          <div className="bg-green-100 p-2 rounded-full">
-                            <Clock className="text-green-600" size={20} />
-                          </div>
-                          <div>
-                            <p className="text-sm text-green-800">総活動時間</p>
-                            <p className="font-bold text-xl">
-                              {summary.totalHours}時間
-                            </p>
-                          </div>
-                        </div>
-                        <div className="bg-purple-50 rounded-lg p-4 flex-1 flex items-center gap-3">
-                          <div className="bg-purple-100 p-2 rounded-full">
-                            <Award className="text-purple-600" size={20} />
-                          </div>
-                          <div>
-                            <p className="text-sm text-purple-800">
-                              主要スキル
-                            </p>
-                            <p className="font-bold text-lg">
-                              {summary.topSkills[0]}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{customSummaryText}</p>
-                    </div>
+                    className="absolute w-3 h-3 bg-rose-500 rounded-full shadow-lg"
+                    style={{
+                      animation: "spin 4s linear infinite",
+                      transformOrigin: "12px 12px",
+                      left: "50%",
+                      top: "0",
+                    }}
+                  ></div>
 
-                    {/* コアコンピテンシーセクション */}
-                    <div className="mb-8">
-                      <h4 className="text-lg font-semibold mb-3">
-                        主要スキルと発揮傾向
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {coreSkills.map((skill, index) => {
-                          // DBから返されたアイコン名を使用
-                          const IconComponent = iconMap[skill.icon] || Sparkles;
-                          // 色の配列を定義（順番固定）
-                          const colors = ["rose", "blue", "green", "purple"];
-                          // インデックスに基づいて色を選択（配列の範囲を超える場合は最初の色に戻る）
-                          const color = colors[index % colors.length];
+                  {/* 回転する軌道 - 内側 */}
+                  <div className="absolute w-16 h-16 rounded-full border border-rose-200 opacity-70"></div>
 
-                          return (
-                            <div key={skill.id}>
-                              <div className="flex justify-between items-center mb-2">
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={`bg-${color}-100 p-1.5 rounded-full`}
-                                  >
-                                    <IconComponent
-                                      className={`text-${color}-600`}
-                                      size={16}
-                                    />
-                                  </div>
-                                  <h3 className="font-medium">{skill.name}</h3>
-                                </div>
-                                <span
-                                  className={`text-sm px-2 py-1 rounded-full bg-${color}-50 text-${color}-700 border border-${color}-200`}
-                                >
-                                  {skill.tendency}
-                                </span>
+                  {/* 回転する粒子 - 内側 */}
+                  <div
+                    className="absolute w-2 h-2 bg-rose-300 rounded-full shadow-sm"
+                    style={{
+                      animation: "spin 2s linear infinite",
+                      transformOrigin: "8px 8px",
+                      left: "50%",
+                      top: "calc(50% - 8px)",
+                    }}
+                  ></div>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  ポートフォリオを作成中...
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  あなたのケア活動からスキルを分析しています
+                </p>
+              </div>
+            ) : !isPortfolioLoaded ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="text-center mb-8">
+                  <Brain className="h-16 w-16 text-rose-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    ポートフォリオを作成しましょう
+                  </h2>
+                  <p className="text-gray-600 max-w-md">
+                    あなたのケア活動から得られたスキルを分析し、職業に転用可能なポートフォリオを作成します。
+                  </p>
+                </div>
+                <Button
+                  size="lg"
+                  className="bg-rose-600 hover:bg-rose-700"
+                  onClick={fetchPortfolioData}
+                >
+                  ポートフォリオを読み込む
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-end mb-4">
+                  <Button onClick={handleGeneratePdf} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    PDFダウンロード
+                  </Button>
+                </div>
+                <div>
+                  {/* 専門的概要セクション */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div
+                        ref={portfolioRef}
+                        className="bg-white border border-gray-200 rounded-lg p-6 max-w-4xl mx-auto"
+                      >
+                        <div className="flex justify-between items-center mb-8">
+                          <h4 className="text-xl font-semibold">
+                            ケアスキルポートフォリオ
+                          </h4>
+                        </div>
+                        <div className="mb-8">
+                          <h4 className="text-lg font-semibold mb-3">
+                            実績とスキル概要
+                          </h4>
+                          <div className="flex flex-col md:flex-row gap-4 mb-4">
+                            <div className="bg-blue-50 rounded-lg p-4 flex-1 flex items-center gap-3">
+                              <div className="bg-blue-100 p-2 rounded-full">
+                                <FileText className="text-blue-600" size={20} />
                               </div>
-                              <p className="text-sm text-gray-600">
-                                {skill.description}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 統合されたハイライトとエピソードセクション */}
-                    <div className="mb-8">
-                      <h4 className="text-lg font-semibold mb-3">
-                        具体的なストーリー
-                      </h4>
-                      <div className="space-y-6">
-                        {experiences.map((experience) => (
-                          <div
-                            key={experience.id}
-                            className={`border border-${experience.color}-200 rounded-lg overflow-hidden`}
-                          >
-                            {/* ヘッダー部分 */}
-                            <div
-                              className={`bg-${experience.color}-50 p-3 border-b border-${experience.color}-200`}
-                            >
-                              <div className="flex justify-between">
-                                <h5
-                                  className={`font-medium text-${experience.color}-800 flex items-center gap-2`}
-                                >
-                                  {experience.title}
-                                </h5>
-                              </div>
-                            </div>
-
-                            {/* コンテンツ部分 */}
-                            <div className="p-4">
-                              {/* STAR形式のエピソード */}
                               <div>
-                                <p className="text-sm text-gray-600">
-                                  {experience.starStatement}
+                                <p className="text-sm text-blue-800">
+                                  活動記録数
+                                </p>
+                                <p className="font-bold text-xl">
+                                  {summary.totalActivities}件
+                                </p>
+                              </div>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-4 flex-1 flex items-center gap-3">
+                              <div className="bg-green-100 p-2 rounded-full">
+                                <Clock className="text-green-600" size={20} />
+                              </div>
+                              <div>
+                                <p className="text-sm text-green-800">
+                                  総活動時間
+                                </p>
+                                <p className="font-bold text-xl">
+                                  {summary.totalHours}時間
+                                </p>
+                              </div>
+                            </div>
+                            <div className="bg-purple-50 rounded-lg p-4 flex-1 flex items-center gap-3">
+                              <div className="bg-purple-100 p-2 rounded-full">
+                                <Award className="text-purple-600" size={20} />
+                              </div>
+                              <div>
+                                <p className="text-sm text-purple-800">
+                                  主要スキル
+                                </p>
+                                <p className="font-bold text-lg">
+                                  {summary.topSkills[0]}
                                 </p>
                               </div>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                          <p className="text-gray-700">{customSummaryText}</p>
+                        </div>
 
-                    {/* フッターセクション */}
-                    <div>
-                      <h4 className="text-lg font-semibold mb-3">
-                        このポートフォリオについて
-                      </h4>
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <p className="text-sm text-gray-700 mb-3">
-                          このポートフォリオは、日常のケア活動から抽出したビジネススキルを可視化したものです。家事や育児、介護などの経験を通じて培われた実践的能力を、企業環境で活かせる具体的なスキルとして整理しています。
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          スキル内容や経歴についてさらに詳しい情報が必要な場合は、
-                          {user.name}（{user.email}
-                          ）までお気軽にお問い合わせください。
-                        </p>
+                        {/* コアコンピテンシーセクション */}
+                        <div className="mb-8">
+                          <h4 className="text-lg font-semibold mb-3">
+                            主要スキルと発揮傾向
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {coreSkills.map((skill, index) => {
+                              // DBから返されたアイコン名を使用
+                              const IconComponent =
+                                iconMap[skill.icon] || Sparkles;
+                              // 色の配列を定義（順番固定）
+                              const colors = [
+                                "rose",
+                                "blue",
+                                "green",
+                                "purple",
+                              ];
+                              // インデックスに基づいて色を選択（配列の範囲を超える場合は最初の色に戻る）
+                              const color = colors[index % colors.length];
+
+                              return (
+                                <div key={skill.id}>
+                                  <div className="flex justify-between items-center mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <div
+                                        className={`bg-${color}-100 p-1.5 rounded-full`}
+                                      >
+                                        <IconComponent
+                                          className={`text-${color}-600`}
+                                          size={16}
+                                        />
+                                      </div>
+                                      <h3 className="font-medium">
+                                        {skill.name}
+                                      </h3>
+                                    </div>
+                                    <span
+                                      className={`text-sm px-2 py-1 rounded-full bg-${color}-50 text-${color}-700 border border-${color}-200`}
+                                    >
+                                      {skill.tendency}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    {skill.description}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 統合されたハイライトとエピソードセクション */}
+                        <div className="mb-8">
+                          <h4 className="text-lg font-semibold mb-3">
+                            具体的なストーリー
+                          </h4>
+                          <div className="space-y-6">
+                            {experiences.map((experience) => (
+                              <div
+                                key={experience.id}
+                                className={`border border-${experience.color}-200 rounded-lg overflow-hidden`}
+                              >
+                                {/* ヘッダー部分 */}
+                                <div
+                                  className={`bg-${experience.color}-50 p-3 border-b border-${experience.color}-200`}
+                                >
+                                  <div className="flex justify-between">
+                                    <h5
+                                      className={`font-medium text-${experience.color}-800 flex items-center gap-2`}
+                                    >
+                                      {experience.title}
+                                    </h5>
+                                  </div>
+                                </div>
+
+                                {/* コンテンツ部分 */}
+                                <div className="p-4">
+                                  {/* STAR形式のエピソード */}
+                                  <div>
+                                    <p className="text-sm text-gray-600">
+                                      {experience.starStatement}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* フッターセクション */}
+                        <div>
+                          <h4 className="text-lg font-semibold mb-3">
+                            このポートフォリオについて
+                          </h4>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <p className="text-sm text-gray-700 mb-3">
+                              このポートフォリオは、日常のケア活動から抽出したビジネススキルを可視化したものです。家事や育児、介護などの経験を通じて培われた実践的能力を、企業環境で活かせる具体的なスキルとして整理しています。
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              スキル内容や経歴についてさらに詳しい情報が必要な場合は、
+                              {user.name}（{user.email}
+                              ）までお気軽にお問い合わせください。
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </div>
