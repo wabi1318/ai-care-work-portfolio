@@ -140,7 +140,7 @@ export default function CalendarInsights() {
           ...candidate,
           problem: "",
           solution: "",
-          emotion: "選択なし",
+          emotion: "",
           result: "",
           expanded: false,
         })
@@ -251,7 +251,7 @@ export default function CalendarInsights() {
         duration: candidate.duration,
         problem: candidate.problem,
         solution: candidate.solution,
-        emotion: candidate.emotion === "選択なし" ? null : candidate.emotion,
+        emotion: candidate.emotion === "" ? null : candidate.emotion,
         result: candidate.result,
       };
     });
@@ -694,48 +694,19 @@ export default function CalendarInsights() {
                                     >
                                       感情・気分（任意）
                                     </Label>
-                                    <Select
-                                      value={candidate.emotion || "選択なし"}
-                                      onValueChange={(value) =>
+                                    <Textarea
+                                      id={`emotion-${candidate.id}`}
+                                      value={candidate.emotion}
+                                      onChange={(e) =>
                                         updateCandidateDetail(
                                           candidate.id,
                                           "emotion",
-                                          value
+                                          e.target.value
                                         )
                                       }
-                                    >
-                                      <SelectTrigger
-                                        id={`emotion-${candidate.id}`}
-                                      >
-                                        <SelectValue placeholder="選択してください" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="選択なし">
-                                          選択なし
-                                        </SelectItem>
-                                        <SelectItem value="喜び">
-                                          喜び
-                                        </SelectItem>
-                                        <SelectItem value="焦り">
-                                          焦り
-                                        </SelectItem>
-                                        <SelectItem value="不安">
-                                          不安
-                                        </SelectItem>
-                                        <SelectItem value="充実">
-                                          充実
-                                        </SelectItem>
-                                        <SelectItem value="疲労">
-                                          疲労
-                                        </SelectItem>
-                                        <SelectItem value="冷静">
-                                          冷静
-                                        </SelectItem>
-                                        <SelectItem value="イライラ">
-                                          イライラ
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                      placeholder="例：充実した、少し不安だった、など"
+                                      className="min-h-[80px] resize-none"
+                                    />
                                   </div>
 
                                   <div className="grid w-full items-center gap-1.5">

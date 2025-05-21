@@ -195,21 +195,14 @@ export default function ActivityForm({
           {/* 感情 */}
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="emotion">感情・気分（任意）</Label>
-            <Select onValueChange={handleSelectChange} value={formData.emotion}>
-              <SelectTrigger>
-                <SelectValue placeholder="選択してください" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="選択なし">選択なし</SelectItem>
-                <SelectItem value="喜び">喜び</SelectItem>
-                <SelectItem value="焦り">焦り</SelectItem>
-                <SelectItem value="不安">不安</SelectItem>
-                <SelectItem value="充実">充実</SelectItem>
-                <SelectItem value="疲労">疲労</SelectItem>
-                <SelectItem value="冷静">冷静</SelectItem>
-                <SelectItem value="イライラ">イライラ</SelectItem>
-              </SelectContent>
-            </Select>
+            <Textarea
+              id="emotion"
+              name="emotion"
+              placeholder="例：充実した、少し不安だった、など"
+              value={formData.emotion}
+              onChange={handleChange}
+              className="min-h-[80px]"
+            />
           </div>
 
           {/* 結果 */}
