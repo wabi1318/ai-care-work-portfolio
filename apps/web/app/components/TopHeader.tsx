@@ -34,7 +34,7 @@ export default function TopHeader() {
                 手動で記録
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link
                 href="/ai-chat"
                 className="flex items-center gap-2 cursor-pointer"
@@ -42,7 +42,7 @@ export default function TopHeader() {
                 <MessageSquare size={16} />
                 AIと会話して記録
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem asChild>
               <Link
                 href="/calendar/insights"
