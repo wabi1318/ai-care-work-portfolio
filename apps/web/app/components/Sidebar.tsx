@@ -42,7 +42,7 @@ export default function Sidebar() {
           }`}
         >
           <Calendar size={18} />
-          活動記録
+          活動一覧
         </Link>
         <Link
           href="/portfolio"

@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, bigint, date, text, timestamp, pgPolicy, varchar } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, bigint, date, text, timestamp, pgPolicy, varchar, serial, numeric, jsonb } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -99,3 +99,14 @@ export const skills = pgTable("skills", {
 			name: "skills_user_id_fkey"
 		}),
 ]);
+
+export const careActivityCandidates = pgTable("care_activity_candidates", {
+	id: serial().primaryKey().notNull(),
+	userId: varchar("user_id", { length: 36 }).notNull(),
+	rawTitle: text("raw_title").notNull(),
+	rawStart: timestamp("raw_start", { withTimezone: true, mode: 'string' }).notNull(),
+	rawEnd: timestamp("raw_end", { withTimezone: true, mode: 'string' }).notNull(),
+	score: numeric(),
+	extractedJson: jsonb("extracted_json"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+});

@@ -17,8 +17,8 @@ import {
   CalendarIcon,
 } from "lucide-react";
 
-import Sidebar from "@/components/Sidebar";
-import TopHeader from "@/components/TopHeader";
+import Sidebar from "@/app/components/Sidebar";
+import TopHeader from "@/app/components/TopHeader";
 
 export default function Activities() {
   return (

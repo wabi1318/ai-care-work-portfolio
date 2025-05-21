@@ -13,7 +13,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Label } from "@workspace/ui/components/label";
 import { Badge } from "@workspace/ui/components/badge";
-import TopHeader from "@/components/TopHeader";
+import TopHeader from "@/app/components/TopHeader";
 import SkillAnalysisResult, {
   SkillAnalysis,
   ResumeExample,

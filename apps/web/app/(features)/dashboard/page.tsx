@@ -19,7 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import TopHeader from "@/components/TopHeader";
+import TopHeader from "@/app/components/TopHeader";
 
 export default function Dashboard() {
   return (
