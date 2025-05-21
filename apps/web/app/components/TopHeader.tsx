@@ -52,6 +52,15 @@ export default function TopHeader() {
                 カレンダーから記録
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/tasks/insights"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Calendar size={16} />
+                タスクから記録
+              </Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
