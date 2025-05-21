@@ -206,45 +206,29 @@ export default function PortfolioLoading() {
         </div>
       </div>
 
-      {/* ローディングインジケーター - 新しいデザイン */}
-      <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
+      {/* コンテンツ領域内のローディングインジケーター */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-80 rounded-lg p-6 shadow-lg">
         <div className="flex flex-col items-center">
-          {/* 新しいローディングアニメーション */}
-          <div className="relative w-40 h-40 flex items-center justify-center">
+          <div className="relative w-24 h-24 flex items-center justify-center">
             {/* 背景の光る円 */}
-            <div className="absolute w-20 h-20 bg-rose-50 rounded-full animate-pulse"></div>
+            <div className="absolute w-12 h-12 bg-rose-50 rounded-full animate-pulse"></div>
 
             {/* 中央のアイコン */}
             <div className="relative z-20 animate-float">
-              <Brain className="h-12 w-12 text-rose-600" />
+              <Brain className="h-8 w-8 text-rose-600" />
             </div>
 
             {/* 回転する軌道 - 外側 */}
-            <div className="absolute w-40 h-40 rounded-full border border-rose-200 opacity-70"></div>
+            <div className="absolute w-24 h-24 rounded-full border border-rose-200 opacity-70"></div>
 
             {/* 回転する粒子 - 外側 */}
             <div
-              className="absolute w-4 h-4 bg-rose-500 rounded-full shadow-lg"
+              className="absolute w-3 h-3 bg-rose-500 rounded-full shadow-lg"
               style={{
                 animation: "orbit 4s linear infinite",
                 transformOrigin: "center",
-                left: "calc(50% - 8px)",
-                top: "0",
-              }}
-            ></div>
-
-            {/* 回転する軌道 - 中間 */}
-            <div className="absolute w-28 h-28 rounded-full border border-rose-200 opacity-70"></div>
-
-            {/* 回転する粒子 - 中間 */}
-            <div
-              className="absolute w-3 h-3 bg-rose-400 rounded-full shadow-md"
-              style={{
-                animation: "orbit 3s linear infinite",
-                animationDirection: "reverse",
-                transformOrigin: "center",
                 left: "calc(50% - 6px)",
-                top: "calc(50% - 14px - 3px)",
+                top: "0",
               }}
             ></div>
 
@@ -263,29 +247,20 @@ export default function PortfolioLoading() {
             ></div>
           </div>
 
-          {/* テキスト部分 - フェードインアニメーション */}
-          <div className="mt-8 text-center animate-fadeIn">
-            <p className="text-lg font-medium text-rose-600">
-              ポートフォリオを作成中...
+          {/* テキスト部分 */}
+          <div className="mt-4 text-center">
+            <p className="text-sm font-medium text-rose-600">
+              ポートフォリオを読み込み中...
             </p>
-            <p className="text-sm text-gray-500 mt-2">
-              あなたのケア活動からスキルを分析しています
-            </p>
+          </div>
 
-            {/* ドットアニメーション */}
-            <div className="flex justify-center mt-3 space-x-2">
-              <span
-                className="inline-block w-2 h-2 bg-rose-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0s", animationDuration: "0.8s" }}
-              ></span>
-              <span
-                className="inline-block w-2 h-2 bg-rose-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.2s", animationDuration: "0.8s" }}
-              ></span>
-              <span
-                className="inline-block w-2 h-2 bg-rose-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.4s", animationDuration: "0.8s" }}
-              ></span>
+          {/* プログレスバー */}
+          <div className="mt-3 w-48">
+            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-rose-600 h-1.5 rounded-full progress-bar-animation"
+                style={{ width: "0%" }}
+              ></div>
             </div>
           </div>
         </div>
