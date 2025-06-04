@@ -142,21 +142,10 @@ export default function ActivityAnalysis() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ヘッダー */}
-      <TopHeader />
+      <TopHeader title="活動分析" showBackButton={true} />
 
       {/* メインコンテンツ */}
       <main className="container mx-auto py-8 px-4 md:px-6">
-        {/* 戻るリンク */}
-        <div className="mb-6">
-          <Link
-            href="/activity-log"
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft size={20} />
-            <span>活動入力に戻る</span>
-          </Link>
-        </div>
-
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-sm">
             <CardHeader>
@@ -166,55 +155,159 @@ export default function ActivityAnalysis() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
+                {/* 入力された活動セクション */}
                 <div>
-                  <Label className="text-xs text-gray-500">活動内容</Label>
-                  <div className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-md min-h-[100px] whitespace-pre-wrap">
-                    {activity.activity_content}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        入力された活動
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        活動の詳細情報と振り返り
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs text-gray-500">所要時間</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md min-w-[40px] text-center">
-                        {hours}
+                  <div className="rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-white p-4 space-y-6">
+                      {/* 活動内容 */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">
+                          活動内容
+                        </Label>
+                        <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px] whitespace-pre-wrap">
+                          {activity.activity_content}
+                        </div>
                       </div>
-                      <span>時間</span>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md min-w-[40px] text-center">
-                        {minutes}
+
+                      {/* 所要時間 */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">
+                          所要時間
+                        </Label>
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg min-w-[50px] text-center font-medium text-gray-900">
+                            {hours}
+                          </div>
+                          <span className="text-gray-600">時間</span>
+                          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg min-w-[50px] text-center font-medium text-gray-900">
+                            {minutes}
+                          </div>
+                          <span className="text-gray-600">分</span>
+                        </div>
                       </div>
-                      <span>分</span>
+
+                      {/* 発生した課題 */}
+                      {activity.problem && (
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            発生した課題
+                          </Label>
+                          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[80px] whitespace-pre-wrap">
+                            {activity.problem}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 解決策 */}
+                      {activity.solution && (
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            解決策
+                          </Label>
+                          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[80px] whitespace-pre-wrap">
+                            {activity.solution}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 感情・気分 */}
+                      {activity.emotion && (
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            感情・気分
+                          </Label>
+                          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[80px] whitespace-pre-wrap">
+                            {activity.emotion}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 成果や家族の反応 */}
+                      {activity.result && (
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            成果や家族の反応
+                          </Label>
+                          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[80px] whitespace-pre-wrap">
+                            {activity.result}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-xs text-gray-500">
-                    検出されたスキル
-                  </Label>
-                  <div className="flex flex-wrap gap-2 mt-2 p-2 border border-gray-200 rounded-md bg-gray-50">
-                    {limitedSkills.map((skill, idx) => (
-                      <Badge key={idx} variant="outline" className="bg-white">
-                        {skill.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="mt-8">
-                  <h3 className="font-medium text-gray-900 mb-4">
-                    詳細な分析結果:
-                  </h3>
-                  <div className="bg-white border border-gray-200 rounded-lg">
-                    <h4 className="font-medium p-4 border-b border-gray-200">
-                      「{activity.activity_content.substring(0, 30)}...」の分析
-                    </h4>
-                    <SkillAnalysisResult
-                      skills={limitedSkills}
-                      resumeExamples={resumeExamples}
-                      activityDescription={activity.activity_content}
-                    />
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        活動分析結果
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        この活動から抽出されたスキルと経験の分析
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-b border border-gray-200 rounded-xl  overflow-hidden">
+                    <div className="grid gap-6">
+                      <div>
+                        <div className="bg-white p-4 rounded-lg border border-gray-100">
+                          <SkillAnalysisResult
+                            skills={limitedSkills}
+                            resumeExamples={resumeExamples}
+                            activityDescription={activity.activity_content}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

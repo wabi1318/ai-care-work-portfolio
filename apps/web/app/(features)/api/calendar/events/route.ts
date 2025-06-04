@@ -45,10 +45,10 @@ async function refreshAccessToken(refreshToken: string) {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    // 期間パラメータ取得（デフォルトは3日前から今日まで）
+    // 期間パラメータ取得（デフォルトは1週間前から今日まで）
     const timeMin =
       url.searchParams.get("timeMin") ||
-      new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const timeMax = url.searchParams.get("timeMax") || new Date().toISOString();
 
     // アクセストークン取得

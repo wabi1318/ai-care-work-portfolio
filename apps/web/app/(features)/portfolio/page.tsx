@@ -345,7 +345,11 @@ export default function Portfolio() {
         {/* メインコンテンツ */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* トップヘッダー */}
-          <TopHeader />
+          <TopHeader
+            title="ポートフォリオ"
+            showBackButton={false}
+            showActionButton={true}
+          />
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
             {error ? (

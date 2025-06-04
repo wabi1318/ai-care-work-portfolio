@@ -30,7 +30,11 @@ export default function Dashboard() {
         {/* メインコンテンツ */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* トップヘッダー */}
-          <TopHeader />
+          <TopHeader
+            title="ダッシュボード"
+            showBackButton={false}
+            showActionButton={true}
+          />
           {/* メインコンテンツエリア（スクロール可能） */}
           <main className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

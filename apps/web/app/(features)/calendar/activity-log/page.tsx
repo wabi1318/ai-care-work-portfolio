@@ -18,21 +18,10 @@ export default function ActivityLog() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ヘッダー */}
-      <TopHeader />
+      <TopHeader title="ケア活動記録" showBackButton={true} />
 
       {/* メインコンテンツ */}
       <main className="container mx-auto py-8 px-4 md:px-6">
-        {/* 戻るリンク */}
-        <div className="mb-6">
-          <Link
-            href="/activities"
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft size={20} />
-            <span>戻る</span>
-          </Link>
-        </div>
-
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">ケア活動を記録</h1>
 

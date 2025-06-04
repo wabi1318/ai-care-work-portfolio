@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart2, Calendar, FileText, Users2 } from "lucide-react";
+import { BarChart2, Calendar, FileText, Settings, Users2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function Sidebar() {
@@ -54,6 +54,17 @@ export default function Sidebar() {
         >
           <FileText size={18} />
           ポートフォリオ
+        </Link>
+        <Link
+          href="/settings"
+          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md ${
+            isActive("/settings")
+              ? "bg-rose-50 text-rose-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <Settings size={18} />
+          設定
         </Link>
       </nav>
       <div className="p-4 border-t border-gray-200">
