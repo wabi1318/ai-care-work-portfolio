@@ -7,6 +7,8 @@ export interface SkillAnalysis {
   tendency: string;
   relevance: string;
   reason: string;
+  description?: string;
+  icon?: string;
 }
 
 export interface ResumeExample {
@@ -95,6 +97,7 @@ export default function SkillAnalysisResult({
                 </span>
               </div>
             </div>
+            <p className="text-sm text-gray-600">{skill.description}</p>
             <p className="text-sm text-gray-600">{skill.reason}</p>
           </div>
         ))}

@@ -13,42 +13,125 @@ interface Skill {
   icon?: string;
 }
 
+// 活動データの型定義
+interface Activity {
+  date: string;
+  activity_content: string;
+  duration: number;
+  problem?: string;
+  solution?: string;
+  emotion?: string;
+  result?: string;
+  source?: "manual" | "calendar" | "tasks"; // データソースを追加
+}
+
+// リクエストの型定義
+interface SingleActivityRequest {
+  date: string;
+  activity_content: string;
+  duration: number;
+  problem: string;
+  solution: string;
+  emotion?: string;
+  result: string;
+}
+
+interface MultipleActivitiesRequest {
+  activities: Activity[];
+  source?: "calendar" | "tasks";
+}
+
 // スキル定義の配列
 const skillDefinitions = [
   {
-    name: "マルチタスク管理能力",
-    definition: "複数の作業を同時に進行し、適切に切り替えて遂行する能力",
-    icon: "layers",
+    name: "主体性",
+    definition: "物事に進んで取り組み、自ら一歩踏み出す力",
+    icon: "zap",
   },
   {
-    name: "問題解決・危機対応力",
-    definition: "課題を発見し、冷静に対応策を立案・実行する能力",
-    icon: "brain",
+    name: "自己主張性",
+    definition: "自分の権利や意見を率直に示し、必要な場面で声を上げられる力",
+    icon: "megaphone",
   },
   {
-    name: "コミュニケーション能力",
-    definition: "相手の話を理解し、自分の考えを明確に伝える能力",
-    icon: "message-square",
+    name: "働きかけ力",
+    definition: "周囲を巻き込み、行動を促す影響力",
+    icon: "handshake",
   },
   {
-    name: "忍耐力・感情マネジメント",
-    definition: "困難な状況下でも冷静さと前向きさを保つ能力",
-    icon: "shield",
+    name: "実行力",
+    definition: "目的を定め、計画どおりに行動を完遂する力",
+    icon: "check-circle",
   },
   {
-    name: "計画力・時間管理能力",
-    definition: "目標達成に向けて計画を立て、優先順位を整理して遂行する能力",
-    icon: "clock",
+    name: "粘り強さ",
+    definition: "障害に直面しても目標達成まで粘り強く取り組む力",
+    icon: "repeat",
   },
   {
-    name: "共感・傾聴力",
-    definition: "相手の立場や感情に寄り添い、丁寧に話を聞く能力",
+    name: "達成動機",
+    definition: "高い基準を設定し、それを達成しようと努力する動機づけ",
+    icon: "target",
+  },
+  {
+    name: "課題発見力",
+    definition: "現状を分析し、目的や課題を明らかにする力",
+    icon: "search",
+  },
+  {
+    name: "計画力",
+    definition: "課題解決に向けたプロセスを具体化し準備する力",
+    icon: "calendar-clock",
+  },
+  {
+    name: "創造力",
+    definition: "新しい価値やアイデアを生み出す力",
+    icon: "lightbulb",
+  },
+  {
+    name: "柔軟性",
+    definition: "意見の違いや変化に適切に適応する力",
+    icon: "shuffle",
+  },
+  {
+    name: "発信力",
+    definition: "自分の考えをわかりやすく伝える力",
+    icon: "mic",
+  },
+  {
+    name: "傾聴力",
+    definition: "相手の意見を丁寧に聴き、理解する力",
     icon: "ear",
   },
   {
-    name: "サポート力",
-    definition: "他者の立場に立ち、必要に応じて支援・補助を行う能力",
-    icon: "hand-helping",
+    name: "社交性",
+    definition: "初対面でも人と交流し、関係を築く力",
+    icon: "users",
+  },
+  {
+    name: "共感性",
+    definition: "他者の感情や視点を感じ取り、理解・共鳴する力",
+    icon: "heart",
+  },
+  {
+    name: "信頼性",
+    definition: "約束を守り誠実に振る舞うことで信頼を獲得する力",
+    icon: "shield-check",
+  },
+  {
+    name: "規律性・責任感",
+    definition: "社会のルールや他者との約束を守り、責任を果たす姿勢",
+    icon: "clipboard-check",
+  },
+  {
+    name: "自制心",
+    definition: "衝動や欲求をコントロールし、注意を維持する力",
+    icon: "lock",
+  },
+  {
+    name: "ストレスマネジメント",
+    definition: "ストレス要因を認識し、心身の安定を保つ力",
+    icon: "heart-pulse",
   },
 ];
 
@@ -62,14 +145,12 @@ function getTendency(count: number): string {
 
 // スキル名からアイコンを取得する関数
 function getSkillIcon(skillName: string): string {
-  // 定義済みスキルから検索
   const definedSkill = skillDefinitions.find(
     (skill) => skill.name === skillName
   );
   if (definedSkill && definedSkill.icon) {
     return definedSkill.icon;
   }
-  // デフォルトアイコン
   return "sparkles";
 }
 
@@ -101,51 +182,43 @@ async function fetchSkills() {
     return data.data || [];
   } catch (error) {
     console.error("スキル取得エラー:", error);
-    return []; // エラー時は空配列を返す
+    return [];
   }
 }
 
-export async function POST(req: Request) {
-  try {
-    const {
-      date,
-      activity_content,
-      duration,
-      problem,
-      solution,
-      emotion,
-      result,
-    } = await req.json();
+// 単一活動を分析する関数
+async function analyzeSingleActivity(
+  activity: SingleActivityRequest,
+  allSkills: Skill[]
+): Promise<any> {
+  const {
+    date,
+    activity_content,
+    duration,
+    problem,
+    solution,
+    emotion,
+    result,
+  } = activity;
 
-    // 必須フィールドの検証
-    if (!date || !activity_content || !duration) {
-      return NextResponse.json(
-        { error: "必須フィールド（日付・活動内容・所要時間）が不足しています" },
-        { status: 400 }
-      );
-    }
+  // 必須フィールドの検証
+  if (!date || !activity_content || !duration) {
+    throw new Error(
+      "必須フィールド（日付・活動内容・所要時間）が不足しています"
+    );
+  }
 
-    // 追加の必須フィールドの検証
-    if (!problem || !solution || !result) {
-      return NextResponse.json(
-        {
-          error:
-            "必須フィールド（発生した課題・解決策・成果や家族の反応）が不足しています",
-        },
-        { status: 400 }
-      );
-    }
+  if (!problem || !solution || !result) {
+    throw new Error(
+      "必須フィールド（発生した課題・解決策・成果や家族の反応）が不足しています"
+    );
+  }
 
-    // バックエンドAPIからスキル一覧を取得
-    const allSkills = await fetchSkills();
+  const skillNames = allSkills
+    .map((skill: Skill) => skill.name)
+    .filter(Boolean);
 
-    // スキル名の一覧を作成
-    const skillNames = allSkills
-      .map((skill: Skill) => skill.name)
-      .filter(Boolean);
-
-    // システムメッセージとユーザーメッセージの構築
-    const systemMessage = `あなたは、家庭内のケア活動を職務経歴書向けに翻訳する支援者です。
+  const systemMessage = `あなたは、家庭内のケア活動を職務経歴書向けに翻訳する支援者です。
 ユーザーの活動記録から、どのようなスキルが表れていたかを読み取り、指定された形式で出力してください。
 評価や点数付けはせず、活動の文脈の中にどのようなスキルが見られるか、その関連性の高さを示してください。
 
@@ -185,7 +258,7 @@ JSON形式で以下の情報を返してください。
   ]
 }`;
 
-    const userMessage = `以下は家庭内ケア活動の記録です。
+  const userMessage = `以下は家庭内ケア活動の記録です。
 この記録をもとに、システムメッセージで定義された形式に従ってスキル抽出と職務経歴書向け文例の生成を行ってください。
 スキルの説明（description）は「スキルの定義＋そのスキルが職場でどのように活かせるか」の形式で、50字程度で記述してください。
 
@@ -199,53 +272,96 @@ JSON形式で以下の情報を返してください。
 解決策: ${solution}
 感情: ${emotion || "特になし"}
 成果: ${result}
----
+---`;
 
-`;
+  const { text: resultText } = await generateText({
+    model: openai("gpt-4o-mini"),
+    system: systemMessage,
+    prompt: userMessage,
+    temperature: 0.4,
+  });
 
-    // OpenAI APIリクエスト
-    const { text: resultText } = await generateText({
-      model: openai("gpt-4o-mini"),
-      system: systemMessage,
-      prompt: userMessage,
-      temperature: 0.3,
-    });
+  const analysisResult = JSON.parse(resultText);
 
-    // 結果のパース
-    try {
-      const result = JSON.parse(resultText);
-      console.log("result", result);
+  // 各スキルに発揮傾向とアイコンを追加
+  if (analysisResult.skills && Array.isArray(analysisResult.skills)) {
+    analysisResult.skills = analysisResult.skills.map((skill: any) => {
+      const icon = getSkillIcon(skill.name);
+      const dbSkill = allSkills.find(
+        (s: Skill) => s.name.toLowerCase() === skill.name.toLowerCase()
+      );
 
-      // 各スキルに発揮傾向とアイコンを追加
-      if (result.skills && Array.isArray(result.skills)) {
-        result.skills = result.skills.map((skill: any) => {
-          // スキル名からアイコンを取得
-          const icon = getSkillIcon(skill.name);
-
-          // DBに登録されているスキルを検索
-          const dbSkill = allSkills.find(
-            (s: Skill) => s.name.toLowerCase() === skill.name.toLowerCase()
-          );
-
-          // 発揮傾向を設定
-          let tendency = "まれに見られる"; // デフォルト値
-
-          if (dbSkill) {
-            tendency = getTendency(Number(dbSkill.count));
-          }
-
-          // スキルに発揮傾向とアイコンを追加
-          return {
-            ...skill,
-            tendency,
-            icon,
-            // DBに登録済みのスキルの場合は既存の説明を使用
-            description: dbSkill?.description || skill.description,
-          };
-        });
+      let tendency = "まれに見られる";
+      if (dbSkill) {
+        tendency = getTendency(Number(dbSkill.count));
       }
 
-      return NextResponse.json({
+      return {
+        ...skill,
+        tendency,
+        icon,
+        description: dbSkill?.description || skill.description,
+      };
+    });
+  }
+
+  return analysisResult;
+}
+
+// 複数活動を分析する関数
+async function analyzeMultipleActivities(
+  activities: Activity[],
+  allSkills: Skill[]
+): Promise<any[]> {
+  const processedActivities = [];
+
+  for (const activity of activities) {
+    const {
+      date,
+      activity_content,
+      duration,
+      problem,
+      solution,
+      emotion,
+      result,
+    } = activity;
+
+    try {
+      // 必須フィールドの検証
+      if (!date || !activity_content || !duration) {
+        processedActivities.push({
+          success: false,
+          activity,
+          error: "必須フィールド（日付・活動内容・所要時間）が不足しています",
+        });
+        continue;
+      }
+
+      if (!problem || !solution || !result) {
+        processedActivities.push({
+          success: false,
+          activity,
+          error:
+            "必須フィールド（発生した課題・解決策・成果や家族の反応）が不足しています",
+        });
+        continue;
+      }
+
+      // 単一活動の分析関数を再利用
+      const analysisResult = await analyzeSingleActivity(
+        {
+          date,
+          activity_content,
+          duration,
+          problem,
+          solution,
+          emotion,
+          result,
+        },
+        allSkills
+      );
+
+      processedActivities.push({
         success: true,
         activity: {
           date,
@@ -256,16 +372,70 @@ JSON形式で以下の情報を返してください。
           emotion,
           result,
         },
-        analysis: result,
+        analysis: analysisResult,
       });
-    } catch (parseError: unknown) {
-      console.error("JSON解析エラー:", parseError);
+    } catch (error) {
+      console.error("活動分析エラー:", error);
       const errorMessage =
-        parseError instanceof Error ? parseError.message : "不明なエラー";
-      return NextResponse.json(
-        { error: "LLM結果の解析に失敗しました", details: errorMessage },
-        { status: 500 }
-      );
+        error instanceof Error ? error.message : "不明なエラー";
+
+      processedActivities.push({
+        success: false,
+        activity,
+        error: "活動の分析に失敗しました",
+        details: errorMessage,
+      });
+    }
+  }
+
+  return processedActivities;
+}
+
+// POSTエンドポイント - 単一または複数活動の分析
+export async function POST(req: Request) {
+  try {
+    const requestBody = await req.json();
+
+    // バックエンドAPIからスキル一覧を取得
+    const allSkills = await fetchSkills();
+
+    // リクエストが単一活動か複数活動かを判定
+    if ("activities" in requestBody && Array.isArray(requestBody.activities)) {
+      // 複数活動の処理
+      const { activities } = requestBody as MultipleActivitiesRequest;
+
+      if (activities.length === 0) {
+        return NextResponse.json(
+          { error: "活動データが含まれていません" },
+          { status: 400 }
+        );
+      }
+
+      const results = await analyzeMultipleActivities(activities, allSkills);
+
+      return NextResponse.json({
+        success: true,
+        results,
+      });
+    } else {
+      // 単一活動の処理
+      const activity = requestBody as SingleActivityRequest;
+
+      const analysisResult = await analyzeSingleActivity(activity, allSkills);
+
+      return NextResponse.json({
+        success: true,
+        activity: {
+          date: activity.date,
+          activity_content: activity.activity_content,
+          duration: activity.duration,
+          problem: activity.problem,
+          solution: activity.solution,
+          emotion: activity.emotion,
+          result: activity.result,
+        },
+        analysis: analysisResult,
+      });
     }
   } catch (error: unknown) {
     console.error("活動登録エラー:", error);
@@ -273,61 +443,6 @@ JSON形式で以下の情報を返してください。
       error instanceof Error ? error.message : "不明なエラー";
     return NextResponse.json(
       { error: "活動の登録・分析に失敗しました", details: errorMessage },
-      { status: 500 }
-    );
-  }
-}
-
-// 全活動を取得するAPI
-export async function GET(req: Request) {
-  try {
-    // TODO: ユーザー認証とデータベースからの活動取得処理
-
-    // 仮のデータを返す（実際の実装ではデータベースから取得）
-    return NextResponse.json({
-      activities: [
-        {
-          id: "1",
-          date: "2025-05-03",
-          activity_content: "子どもを保育園に送迎した",
-          duration: 90,
-          problem: "朝起きられず時間が押した",
-          solution: "前日に服や持ち物を準備しておいた",
-          emotion: "焦ったが冷静に対応",
-          result: "時間通り送り届けた",
-          skills: [
-            {
-              name: "時間管理",
-              tendency: "強く見られる",
-              relevance: "高い",
-              reason: "朝の遅れに対応しつつ、予定通り送迎を完了している",
-            },
-            {
-              name: "先見性と準備力",
-              tendency: "よく見られる",
-              relevance: "高い",
-              reason: "前日に準備をしておくことで時間のリスクに対処している",
-            },
-            {
-              name: "感情制御",
-              tendency: "よく見られる",
-              relevance: "中程度",
-              reason: "焦った状況でも冷静に対応したと記述がある",
-            },
-          ],
-          resume_summary: [
-            "時間変更に柔軟に対応し、家庭内のスケジュール調整を的確に実行",
-            "先を見越した準備と問題解決能力で効率的なタスク管理を実現",
-          ],
-        },
-      ],
-    });
-  } catch (error: unknown) {
-    console.error("活動取得エラー:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "不明なエラー";
-    return NextResponse.json(
-      { error: "活動の取得に失敗しました", details: errorMessage },
       { status: 500 }
     );
   }
