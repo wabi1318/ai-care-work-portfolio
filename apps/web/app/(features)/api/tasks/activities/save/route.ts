@@ -1,13 +1,5 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
-
-// Resendのインスタンス化（メール送信用）
-let resend: Resend | null = null;
-
-if (process.env.RESEND_API_KEY) {
-  resend = new Resend(process.env.RESEND_API_KEY);
-}
 
 // ケア活動をデータベースに保存するAPI
 export async function POST(request: Request) {
@@ -54,20 +46,6 @@ export async function POST(request: Request) {
           activity,
           error: error instanceof Error ? error.message : "保存に失敗しました",
         });
-      }
-    }
-
-    // 活動が保存されたことを通知するメール送信（オプション）
-    if (resend && results.some((result) => result.success)) {
-      try {
-        await resend.emails.send({
-          from: "AICareWork <no-reply@example.com>",
-          to: "user@example.com", // 実際のユーザーメールアドレスにする
-          subject: "新しいケア活動が保存されました",
-          text: `${results.filter((r) => r.success).length}件のケア活動が保存されました。アプリでご確認ください。`,
-        });
-      } catch (emailError) {
-        console.error("通知メール送信エラー:", emailError);
       }
     }
 
